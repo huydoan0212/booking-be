@@ -2,18 +2,17 @@ spring:
   datasource:
     username: postgres
     password: huydoan02122003
-    url: jdbc:postgresql://localhost:5432/nike-be
-  flyway:
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+    url: jdbc:postgresql://localhost:5432/booking-be
+#  flyway:
+#    locations: classpath:db/migration
+#    baseline-on-migrate: true
+#    enabled: false
   security:
     jwt:
       expiration-time: 86400000
       key: 98ba92417a581cc66b63ffe35e22a7f86aa3b5965f7f205b2e7501d140e4c470c9ae4be22f305c5acd25015067f86ecc1fc79925d5340ba69c2fb41e526da66e5ba87e2e98f368969472d6edbde9d5b7713bcf6be21826551d628bcd46047f0fb5a8e5550e001eee169c22bbf704c0ea5f65e460f9d7df51e5dd1d11200f819d
       issuer: meu
   jpa:
-    hibernate:
-      ddl-auto: update
     properties:
       hibernate:
         enable_lazy_load_no_trans: true

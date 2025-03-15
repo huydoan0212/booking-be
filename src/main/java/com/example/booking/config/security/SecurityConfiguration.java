@@ -34,92 +34,60 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
+        http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(authorizeRequests -> authorizeRequests
 
-                                /*
-                                    API authorization
-                                        -   This is a list of APIs for everyone
+                        // PUBLIC APIs - Accessible to everyone
+                        .requestMatchers("/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/auth/login",
+                                "/user/forgot-password",
+                                "/user/check-otp",
+                                "/user/reset-password",
+                                "/user/register",
+                                "/user/active-profile").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/movie/**",
+                                "/category/**")
+                        .permitAll()
+                        // AUTHENTICATED APIs - Requires login
+                        .requestMatchers(HttpMethod.GET, "/user/profile").authenticated().requestMatchers(HttpMethod.PUT, "/user/profile").authenticated()
 
-                                 */
+                        // ADMIN APIs - Requires ADMIN role
+                        .requestMatchers(HttpMethod.GET,
+                                "/user/{id}",
+                                "/user/",
+                                "/user/search").hasRole(ADMIN.toString())
+                        .requestMatchers(HttpMethod.POST,
+                                "/user/{role}",
+                                "/movie/**",
+                                "/category/**").hasRole(ADMIN.toString())
+                        .requestMatchers(HttpMethod.PUT,
+                                "/user/{id}",
+                                "/movie/**",
+                                "/category/**").hasRole(ADMIN.toString())
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/user/{id}",
+                                "/movie/**",
+                                "/category/**").hasRole(ADMIN.toString()))
 
-                                .requestMatchers(
-                                        "/swagger-ui.html",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**",
-                                        "/swagger-resources/**",
-                                        "/webjars/**",
-                                        "/user/forgot-password",
-                                        "/user/check-otp",
-                                        "/user/reset-password",
-                                        "/user/register",
-                                        "/user/active-profile"
-                                )
-                                .permitAll()
-                                .requestMatchers(HttpMethod.POST,
-                                        "/auth/login"
-                                )
-                                .permitAll()
-                                .requestMatchers(HttpMethod.GET,
-                                        "/user/profile"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.PUT,
-                                        "/user/profile"
-                                ).permitAll()
-
-                                /*
-                                    API authorization
-                                        -   This is a list of APIs for only admin
-                                        -   Dev for config system and admin for config as their purpose
-
-                                 */
-                                .requestMatchers(HttpMethod.GET,
-                                        "/user/{id}",
-                                        "/user/",
-                                        "/user/search")
-                                .hasAnyRole(ADMIN.toString())
-                                .requestMatchers(HttpMethod.POST,
-                                        "/user/{role}")
-                                .hasAnyRole(ADMIN.toString())
-                                .requestMatchers(HttpMethod.PUT,
-                                        "/user/{id}")
-                                .hasAnyRole(ADMIN.toString())
-                                .requestMatchers(HttpMethod.DELETE,
-                                        "/user/{id}")
-                                .hasAnyRole(ADMIN.toString())
-
-
-                )
-
-                .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer
-                        .accessDeniedHandler((request, response, e) -> {
-                            GlobalResponse globalResponse = new GlobalResponse(
-                                    ExceptionMessage.FORBIDDEN,
-                                    HttpStatus.FORBIDDEN.value(),
-                                    new Violation(null, "You don't have permission to access this resource"),
-                                    request.getRequestURI()
-                            );
+                .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.accessDeniedHandler((request, response, e) -> {
+                            GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.FORBIDDEN, HttpStatus.FORBIDDEN.value(), new Violation(null, "You don't have permission to access this resource"), request.getRequestURI());
                             response.setContentType("application/json;charset=UTF-8");
                             response.setStatus(HttpStatus.FORBIDDEN.value());
                             response.getWriter().write(new ObjectMapper().writeValueAsString(globalResponse));
                         })
 
                         .authenticationEntryPoint((request, response, e) -> {
-                            GlobalResponse globalResponse = new GlobalResponse(
-                                    ExceptionMessage.UNAUTHORIZED,
-                                    HttpStatus.UNAUTHORIZED.value(),
-                                    new Violation(null, "Access denied"),
-                                    request.getRequestURI()
-                            );
+                            GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), new Violation(null, "Access denied"), request.getRequestURI());
                             response.setContentType("application/json;charset=UTF-8");
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
                             response.getWriter().write(new ObjectMapper().writeValueAsString(globalResponse));
-                        })
-                )
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        })).authenticationProvider(authenticationProvider).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

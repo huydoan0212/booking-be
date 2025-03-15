@@ -1,8 +1,4 @@
-﻿-- .\script\createMigration.ps1 -desc "create_table_users" -type "table"
--- .\script\createMigration.ps1 -desc "init_data_users" -type "seed"
-
-
--- Write your migration SQL here
+﻿-- Write your migration SQL here
 CREATE
 EXTENSION IF NOT EXISTS "uuid-ossp";
 

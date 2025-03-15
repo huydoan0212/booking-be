@@ -1,3 +1,6 @@
+# -- .\script\createMigration.ps1 -desc "create_table_users" -type "table"
+# -- .\script\createMigration.ps1 -desc "init_data_users" -type "seed"
+
 Param(
     [string]$desc = "default_migration",
     [string]$type = "table"
