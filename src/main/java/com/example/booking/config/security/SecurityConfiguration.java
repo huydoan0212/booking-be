@@ -51,10 +51,12 @@ public class SecurityConfiguration {
                                 "/user/active-profile").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/movie/**",
-                                "/category/**")
+                                "/category/**",
+                                "/cinema/**")
                         .permitAll()
                         // AUTHENTICATED APIs - Requires login
-                        .requestMatchers(HttpMethod.GET, "/user/profile").authenticated().requestMatchers(HttpMethod.PUT, "/user/profile").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/user/profile").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/user/profile").authenticated()
 
                         // ADMIN APIs - Requires ADMIN role
                         .requestMatchers(HttpMethod.GET,
@@ -64,15 +66,18 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST,
                                 "/user/{role}",
                                 "/movie/**",
-                                "/category/**").hasRole(ADMIN.toString())
+                                "/category/**",
+                                "/cinema/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.PUT,
                                 "/user/{id}",
                                 "/movie/**",
-                                "/category/**").hasRole(ADMIN.toString())
+                                "/category/**",
+                                "/cinema/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.DELETE,
                                 "/user/{id}",
                                 "/movie/**",
-                                "/category/**").hasRole(ADMIN.toString()))
+                                "/category/**",
+                                "/cinema/**").hasRole(ADMIN.toString()))
 
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.accessDeniedHandler((request, response, e) -> {
                             GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.FORBIDDEN, HttpStatus.FORBIDDEN.value(), new Violation(null, "You don't have permission to access this resource"), request.getRequestURI());
