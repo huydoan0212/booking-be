@@ -17,7 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static com.example.booking.common.Role.ADMIN;
+import static com.example.booking.common.enums.Role.ADMIN;
 
 
 @Slf4j
@@ -52,7 +52,9 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET,
                                 "/movie/**",
                                 "/category/**",
-                                "/cinema/**")
+                                "/cinema/**",
+                                "/cinema-hall/**",
+                                "/seat/**")
                         .permitAll()
                         // AUTHENTICATED APIs - Requires login
                         .requestMatchers(HttpMethod.GET, "/user/profile").authenticated()
@@ -67,17 +69,23 @@ public class SecurityConfiguration {
                                 "/user/{role}",
                                 "/movie/**",
                                 "/category/**",
-                                "/cinema/**").hasRole(ADMIN.toString())
+                                "/cinema/**",
+                                "/cinema-hall/**",
+                                "/seat/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.PUT,
                                 "/user/{id}",
                                 "/movie/**",
                                 "/category/**",
-                                "/cinema/**").hasRole(ADMIN.toString())
+                                "/cinema/**",
+                                "/cinema-hall/**",
+                                "/seat/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.DELETE,
                                 "/user/{id}",
                                 "/movie/**",
                                 "/category/**",
-                                "/cinema/**").hasRole(ADMIN.toString()))
+                                "/cinema/**",
+                                "/cinema-hall/**",
+                                "/seat/**").hasRole(ADMIN.toString()))
 
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.accessDeniedHandler((request, response, e) -> {
                             GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.FORBIDDEN, HttpStatus.FORBIDDEN.value(), new Violation(null, "You don't have permission to access this resource"), request.getRequestURI());

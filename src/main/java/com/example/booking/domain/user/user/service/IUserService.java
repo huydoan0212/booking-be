@@ -1,7 +1,7 @@
 package com.example.booking.domain.user.user.service;
 
 
-import com.example.booking.common.OTPType;
+import com.example.booking.common.enums.type.OTPType;
 import com.example.booking.common.pagination.PageDto;
 import com.example.booking.domain.user.user.dto.*;
 import com.example.booking.domain.user.user.entity.UserEntity;

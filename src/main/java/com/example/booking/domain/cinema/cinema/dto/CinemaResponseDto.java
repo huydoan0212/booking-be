@@ -1,5 +1,6 @@
 package com.example.booking.domain.cinema.cinema.dto;
 
+import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -21,5 +22,6 @@ public class CinemaResponseDto {
     private String imagePortrait;
     private int sortOrder;
     private List<String> imgUrls;
+    private List<CinemaHallResponse> cinemaHalls;
     private OffsetDateTime createdAt;
 }

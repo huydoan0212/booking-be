@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,7 +18,7 @@ public class GlobalResponse {
     private int status;
     private Violation violations;
     private String path;
-    private Long timestamp = System.currentTimeMillis();
+    private OffsetDateTime timestamp = OffsetDateTime.now();
 
     // Success response
     public GlobalResponse(String message, Object data, int status, String path) {

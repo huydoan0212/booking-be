@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.user.dto;
 
-import com.example.booking.common.UserStatus;
+import com.example.booking.common.enums.status.UserStatus;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

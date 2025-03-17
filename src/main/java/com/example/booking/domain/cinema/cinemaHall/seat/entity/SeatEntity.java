@@ -1,5 +1,7 @@
-package com.example.booking.domain.cinema.cinema.entity;
+package com.example.booking.domain.cinema.cinemaHall.seat.entity;
 
+import com.example.booking.common.enums.status.SeatStatus;
+import com.example.booking.common.enums.type.SeatType;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.entity.CinemaHallEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -14,8 +16,6 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -23,47 +23,30 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "cinemas")
+@Table(name = "seats")
 @EntityListeners(AuditingEntityListener.class)
-public class CinemaEntity {
+public class SeatEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "seat_row")
+    private String seatRow;
 
-    @Column(name = "slug")
-    private String slug;
+    @Column(name = "seat_column")
+    private int seatColumn;
 
-    @Column(name = "latitude")
-    private double latitude;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private SeatType type;
 
-    @Column(name = "longitude")
-    private double longitude;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private SeatStatus status;
 
-    @Column(name = "address")
-    private String address;
-
-    @Column(name = "phone")
-    private String phone;
-
-    @Column(name = "image_landscape")
-    private String imageLandscape;
-
-    @Column(name = "image_portrait")
-    private String imagePortrait;
-
-    @ElementCollection
-    @CollectionTable(name = "cinema_images", joinColumns = @JoinColumn(name = "cinema_id"))
-    @Column(name = "img_url")
-    private List<String> imgUrls;
-
-    @Column(name = "sort_order")
-    private int sortOrder;
-
-    @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<CinemaHallEntity> cinemaHalls;
+    @ManyToOne
+    @JoinColumn(name = "cinema_hall_id")
+    private CinemaHallEntity cinemaHall;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -85,4 +68,21 @@ public class CinemaEntity {
     @Column(name = "updated_by")
     private UUID updatedBy;
 
+    public SeatEntity(String seatRow, int seatColumn, SeatType type, SeatStatus status, CinemaHallEntity cinemaHall) {
+        this.seatRow = seatRow;
+        this.seatColumn = seatColumn;
+        this.type = type;
+        this.status = status;
+        this.cinemaHall = cinemaHall;
+    }
+
+    public SeatEntity(String seatRow, int seatColumn, SeatType type, SeatStatus status, CinemaHallEntity cinemaHall, UUID createdBy, UUID updatedBy) {
+        this.seatRow = seatRow;
+        this.seatColumn = seatColumn;
+        this.type = type;
+        this.status = status;
+        this.cinemaHall = cinemaHall;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
+    }
 }

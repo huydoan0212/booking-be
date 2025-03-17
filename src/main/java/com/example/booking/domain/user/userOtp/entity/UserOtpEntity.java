@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.userOtp.entity;
 
-import com.example.booking.common.OTPType;
+import com.example.booking.common.enums.type.OTPType;
 import com.example.booking.domain.user.user.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

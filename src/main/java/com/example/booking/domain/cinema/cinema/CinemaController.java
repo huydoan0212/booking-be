@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
+
 @RestController
 @RequestMapping(path = "/cinema", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Cinema")

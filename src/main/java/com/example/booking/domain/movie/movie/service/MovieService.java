@@ -13,11 +13,11 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class MovieService implements IMovieService {
@@ -43,6 +43,7 @@ public class MovieService implements IMovieService {
     }
 
     @Override
+    @Transactional
     public MovieResponseDto createEntity(CreateMovieDto dto) {
         MovieEntity entity = mapper.toEntity(dto);
         List<CategoryEntity> categories = categoryRepository.findAllById(dto.getCategoryIds());
@@ -52,6 +53,7 @@ public class MovieService implements IMovieService {
 
 
     @Override
+    @Transactional
     public MovieResponseDto updateEntity(UUID id, UpdateMovieDto dto) {
         MovieEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Movie not found", new Exception("id")));
         mapper.updateEntityFromDto(dto, entity);
@@ -61,6 +63,7 @@ public class MovieService implements IMovieService {
     }
 
     @Override
+    @Transactional
     public void deleteEntity(UUID id) {
         MovieEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Movie not found", new Exception("id")));
         repository.delete(entity);

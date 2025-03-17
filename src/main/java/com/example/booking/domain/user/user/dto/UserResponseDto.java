@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.user.dto;
 
-import com.example.booking.common.UserStatus;
+import com.example.booking.common.enums.status.UserStatus;
 import com.example.booking.domain.role.dto.RoleResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

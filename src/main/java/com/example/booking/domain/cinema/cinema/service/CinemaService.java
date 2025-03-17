@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,12 +38,14 @@ public class CinemaService implements ICinemaService {
     }
 
     @Override
+    @Transactional
     public CinemaResponseDto createEntity(CreateCinemaDto dto) {
         CinemaEntity entity = mapper.toEntity(dto);
         return mapper.toResponse(repository.save(entity));
     }
 
     @Override
+    @Transactional
     public CinemaResponseDto updateEntity(UUID id, UpdateCinemaDto dto) {
         CinemaEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Cinema not found", new Exception("id")));
         mapper.updateEntityFromDto(dto, entity);
@@ -50,6 +53,7 @@ public class CinemaService implements ICinemaService {
     }
 
     @Override
+    @Transactional
     public void deleteEntity(UUID id) {
         CinemaEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Cinema not found", new Exception("id")));
         repository.delete(entity);

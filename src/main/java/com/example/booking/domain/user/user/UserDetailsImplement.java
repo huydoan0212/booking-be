@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.user;
 
-import com.example.booking.common.UserStatus;
+import com.example.booking.common.enums.status.UserStatus;
 import com.example.booking.domain.user.user.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

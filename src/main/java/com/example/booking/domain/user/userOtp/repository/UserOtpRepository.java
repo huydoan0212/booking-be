@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.userOtp.repository;
 
-import com.example.booking.common.OTPType;
+import com.example.booking.common.enums.type.OTPType;
 import com.example.booking.domain.user.userOtp.entity.UserOtpEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

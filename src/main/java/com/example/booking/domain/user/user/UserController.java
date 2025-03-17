@@ -1,8 +1,8 @@
 package com.example.booking.domain.user.user;
 
-import com.example.booking.common.OTPType;
-import com.example.booking.common.Role;
-import com.example.booking.common.UserStatus;
+import com.example.booking.common.enums.type.OTPType;
+import com.example.booking.common.enums.Role;
+import com.example.booking.common.enums.status.UserStatus;
 import com.example.booking.common.constant.Constant;
 import com.example.booking.common.pagination.PageDto;
 import com.example.booking.common.pagination.PageOptionsDto;

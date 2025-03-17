@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.user.entity;
 
-import com.example.booking.common.UserStatus;
+import com.example.booking.common.enums.status.UserStatus;
 import com.example.booking.domain.role.entity.RoleEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

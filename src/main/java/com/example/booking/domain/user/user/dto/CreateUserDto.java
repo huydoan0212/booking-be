@@ -1,6 +1,6 @@
 package com.example.booking.domain.user.user.dto;
 
-import com.example.booking.common.Role;
+import com.example.booking.common.enums.Role;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

@@ -1,0 +1,21 @@
+package com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto;
+
+import com.example.booking.domain.cinema.cinemaHall.seat.dto.SeatResponseDto;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@AllArgsConstructor
+public class CinemaHallResponse {
+    private UUID id;
+    private String name;
+    private int totalSeats;
+    private String screenType;
+    private String soundSystem;
+    private OffsetDateTime createdAt;
+    private List<SeatResponseDto> seats;
+}

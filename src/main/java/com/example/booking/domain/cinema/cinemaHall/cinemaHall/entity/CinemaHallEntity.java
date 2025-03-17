@@ -1,5 +1,7 @@
-package com.example.booking.domain.cinema.cinemaHall.entity;
+package com.example.booking.domain.cinema.cinemaHall.cinemaHall.entity;
 
+import com.example.booking.domain.cinema.cinema.entity.CinemaEntity;
+import com.example.booking.domain.cinema.cinemaHall.seat.entity.SeatEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,11 +10,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -20,7 +24,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "cinemas")
+@Table(name = "cinema_halls")
 @EntityListeners(AuditingEntityListener.class)
 public class CinemaHallEntity {
     @Id
@@ -38,6 +42,14 @@ public class CinemaHallEntity {
 
     @Column(name = "sound_system")
     private String soundSystem;
+
+    @ManyToOne
+    @JoinColumn(name = "cinema_id")
+    private CinemaEntity cinema;
+
+    @OrderBy("seatRow ASC, seatColumn ASC")
+    @OneToMany(mappedBy = "cinemaHall", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<SeatEntity> seats;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)

@@ -87,7 +87,7 @@ public class MovieEntity {
     @Column(name = "end_date")
     private OffsetDateTime endDate;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "movie_categories",
             joinColumns = @JoinColumn(name = "movie_id"),

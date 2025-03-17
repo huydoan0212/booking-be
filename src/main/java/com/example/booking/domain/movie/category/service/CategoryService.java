@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,12 +38,14 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryResponseDto createEntity(CreateCategoryDto dto) {
         CategoryEntity entity = mapper.toEntity(dto);
         return mapper.toResponse(repository.save(entity));
     }
 
     @Override
+    @Transactional
     public CategoryResponseDto updateEntity(UUID id, UpdateCategoryDto dto) {
         CategoryEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found", new Exception("id")));
         mapper.updateEntityFromDto(dto, entity);
@@ -50,6 +53,7 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteEntity(UUID id) {
         CategoryEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category not found", new Exception("id")));
         repository.delete(entity);
