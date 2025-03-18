@@ -1,7 +1,7 @@
 package com.example.booking.domain.cinema.cinemaHall.cinemaHall.service;
 
 import com.example.booking.common.template.service.ICRUDService;
-import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponse;
+import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponseDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CreateCinemaHallDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CreateCinemaHallsDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.UpdateCinemaHallDto;
@@ -10,8 +10,8 @@ import com.example.booking.domain.cinema.cinemaHall.cinemaHall.entity.CinemaHall
 import java.util.List;
 import java.util.UUID;
 
-public interface ICinemaHallService extends ICRUDService<CinemaHallEntity, CreateCinemaHallDto, UpdateCinemaHallDto, CinemaHallResponse> {
+public interface ICinemaHallService extends ICRUDService<CinemaHallEntity, CreateCinemaHallDto, UpdateCinemaHallDto, CinemaHallResponseDto> {
 
-    List<CinemaHallResponse> creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos);
+    List<CinemaHallResponseDto> creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos);
 
 }

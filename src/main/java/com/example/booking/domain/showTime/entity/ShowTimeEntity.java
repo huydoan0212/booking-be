@@ -1,8 +1,7 @@
-package com.example.booking.domain.cinema.cinemaHall.seat.entity;
+package com.example.booking.domain.showTime.entity;
 
-import com.example.booking.common.enums.status.SeatStatus;
-import com.example.booking.common.enums.type.SeatType;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.entity.CinemaHallEntity;
+import com.example.booking.domain.movie.movie.entity.MovieEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,33 +22,32 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "seats")
+@Table(name = "show_times")
 @EntityListeners(AuditingEntityListener.class)
-public class SeatEntity {
+public class ShowTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "seat_row")
-    private String seatRow;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id")
+    private MovieEntity movie;
 
-    @Column(name = "seat_column")
-    private int seatColumn;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type")
-    private SeatType type;
-
-    @Column(name = "price")
-    private int price;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private SeatStatus status;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cinema_hall_id")
     private CinemaHallEntity cinemaHall;
+
+    @Column(name = "show_time")
+    private OffsetDateTime showTime;
+
+    @Column(name = "language")
+    private String language;
+
+    @Column(name = "subtitle")
+    private String subtitle;
+
+    @Column(name = "screen_format")
+    private String screenFormat;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -71,22 +69,4 @@ public class SeatEntity {
     @Column(name = "updated_by")
     private UUID updatedBy;
 
-    public SeatEntity(String seatRow, int seatColumn, SeatType type, SeatStatus status, CinemaHallEntity cinemaHall) {
-        this.seatRow = seatRow;
-        this.seatColumn = seatColumn;
-        this.type = type;
-        this.status = status;
-        this.cinemaHall = cinemaHall;
-    }
-
-    public SeatEntity(String seatRow, int seatColumn, SeatType type, SeatStatus status, int price, CinemaHallEntity cinemaHall, UUID createdBy, UUID updatedBy) {
-        this.seatRow = seatRow;
-        this.seatColumn = seatColumn;
-        this.type = type;
-        this.price = price;
-        this.status = status;
-        this.cinemaHall = cinemaHall;
-        this.createdBy = createdBy;
-        this.updatedBy = updatedBy;
-    }
 }

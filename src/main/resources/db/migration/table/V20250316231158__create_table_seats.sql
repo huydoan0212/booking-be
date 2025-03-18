@@ -3,6 +3,7 @@
     "seat_row" varchar(2) NOT NULL,
     "seat_column" integer NOT NULL,
     "type" varchar(25) NOT NULL,
+    "price" integer NOT NULL,
     "status" varchar(25) NOT NULL,
     "cinema_hall_id" uuid NOT NULL,
     "created_at" timestamp with time zone NOT NULL DEFAULT now(),

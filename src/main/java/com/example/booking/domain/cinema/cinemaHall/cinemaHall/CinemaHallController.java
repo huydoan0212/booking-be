@@ -4,7 +4,7 @@ import com.example.booking.common.constant.Constant;
 import com.example.booking.common.pagination.PageDto;
 import com.example.booking.common.pagination.PageOptionsDto;
 import com.example.booking.common.template.CRUDController;
-import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponse;
+import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponseDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CreateCinemaHallDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CreateCinemaHallsDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.UpdateCinemaHallDto;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping(path = "/cinema-hall", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Cinema Hall")
-public class CinemaHallController implements CRUDController<CinemaHallEntity, CreateCinemaHallDto, UpdateCinemaHallDto, CinemaHallResponse> {
+public class CinemaHallController implements CRUDController<CinemaHallEntity, CreateCinemaHallDto, UpdateCinemaHallDto, CinemaHallResponseDto> {
 
     private final ICinemaHallService service;
 
@@ -32,12 +32,12 @@ public class CinemaHallController implements CRUDController<CinemaHallEntity, Cr
 
 
     @Override
-    public CinemaHallResponse getById(UUID id) {
+    public CinemaHallResponseDto getById(UUID id) {
         return service.getEntityById(id);
     }
 
     @Override
-    public List<CinemaHallResponse> getAll() {
+    public List<CinemaHallResponseDto> getAll() {
         return service.getAllEntity();
     }
 
@@ -47,23 +47,23 @@ public class CinemaHallController implements CRUDController<CinemaHallEntity, Cr
     }
 
     @Override
-    public CinemaHallResponse save(CreateCinemaHallDto dto) {
+    public CinemaHallResponseDto save(CreateCinemaHallDto dto) {
         return service.createEntity(dto);
     }
 
     @Override
-    public CinemaHallResponse update(UUID id, UpdateCinemaHallDto dto) {
+    public CinemaHallResponseDto update(UUID id, UpdateCinemaHallDto dto) {
         return service.updateEntity(id, dto);
     }
 
     @Override
-    public PageDto<CinemaHallResponse> search(FilterSpecification<CinemaHallEntity> spec, PageOptionsDto dto) {
+    public PageDto<CinemaHallResponseDto> search(FilterSpecification<CinemaHallEntity> spec, PageOptionsDto dto) {
         return service.searchEntity(spec, dto.toPageable());
     }
 
     @SecurityRequirement(name = Constant.AUTH_GUARD)
     @PostMapping("/creates")
-    public List<CinemaHallResponse> creates(@RequestParam UUID cinemaID, @RequestBody List<CreateCinemaHallsDto> dtos) {
+    public List<CinemaHallResponseDto> creates(@RequestParam UUID cinemaID, @RequestBody List<CreateCinemaHallsDto> dtos) {
         return service.creates(cinemaID, dtos);
     }
 }

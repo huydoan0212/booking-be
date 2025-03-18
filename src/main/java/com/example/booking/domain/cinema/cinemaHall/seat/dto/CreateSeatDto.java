@@ -13,6 +13,7 @@ public class CreateSeatDto {
     private String seatRow;
     private int seatColumn;
     private SeatType type;
+    private int price;
     private SeatStatus status;
     private UUID cinemaHallId;
 }

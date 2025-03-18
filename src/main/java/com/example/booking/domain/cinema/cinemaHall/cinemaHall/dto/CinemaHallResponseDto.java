@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
-public class CinemaHallResponse {
+public class CinemaHallResponseDto {
     private UUID id;
     private String name;
     private int totalSeats;

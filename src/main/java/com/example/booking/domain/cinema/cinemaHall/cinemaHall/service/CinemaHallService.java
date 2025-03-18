@@ -3,7 +3,7 @@ package com.example.booking.domain.cinema.cinemaHall.cinemaHall.service;
 import com.example.booking.common.pagination.PageDto;
 import com.example.booking.domain.cinema.cinema.entity.CinemaEntity;
 import com.example.booking.domain.cinema.cinema.repository.CinemaRepository;
-import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponse;
+import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CinemaHallResponseDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CreateCinemaHallDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.CreateCinemaHallsDto;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto.UpdateCinemaHallDto;
@@ -36,23 +36,22 @@ public class CinemaHallService implements ICinemaHallService {
     }
 
     @Override
-    public CinemaHallResponse getEntityById(UUID id) {
+    public CinemaHallResponseDto getEntityById(UUID id) {
         return mapper.toResponse(repository.findById(id).orElseThrow(() -> new EntityNotFoundException("CinemaHall not found", new Exception("id"))));
     }
 
     @Override
-    public List<CinemaHallResponse> getAllEntity() {
+    public List<CinemaHallResponseDto> getAllEntity() {
         return repository.findAll().stream().map(mapper::toResponse).toList();
     }
 
     @Override
     @Transactional
-    public CinemaHallResponse createEntity(CreateCinemaHallDto dto) {
+    public CinemaHallResponseDto createEntity(CreateCinemaHallDto dto) {
         CinemaEntity cinema = cinemaRepository.findById(dto.getCinemaId())
                 .orElseThrow(() -> new EntityNotFoundException("Cinema not found"));
         CinemaHallEntity entity = mapper.toEntity(dto);
         entity.setCinema(cinema);
-        entity.setTotalSeats(168);
         CinemaHallEntity savedEntity = repository.save(entity);
         seatService.generateSeatsAsync(savedEntity);
         return mapper.toResponse(savedEntity);
@@ -60,7 +59,7 @@ public class CinemaHallService implements ICinemaHallService {
 
     @Override
     @Transactional
-    public CinemaHallResponse updateEntity(UUID id, UpdateCinemaHallDto dto) {
+    public CinemaHallResponseDto updateEntity(UUID id, UpdateCinemaHallDto dto) {
         CinemaHallEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("CinemaHall not found", new Exception("id")));
         mapper.updateEntityFromDto(dto, entity);
         entity.setCinema(cinemaRepository.findById(dto.getCinemaId()).orElseThrow(() -> new EntityNotFoundException("Cinema not found", new Exception("id"))));
@@ -75,13 +74,13 @@ public class CinemaHallService implements ICinemaHallService {
     }
 
     @Override
-    public PageDto<CinemaHallResponse> searchEntity(Specification<CinemaHallEntity> spec, Pageable pageable) {
+    public PageDto<CinemaHallResponseDto> searchEntity(Specification<CinemaHallEntity> spec, Pageable pageable) {
         return new PageDto<>(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
     @Override
     @Transactional
-    public List<CinemaHallResponse> creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos) {
+    public List<CinemaHallResponseDto> creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos) {
         CinemaEntity cinema = cinemaRepository.findById(cinemaID)
                 .orElseThrow(() -> new EntityNotFoundException("Cinema not found"));
 

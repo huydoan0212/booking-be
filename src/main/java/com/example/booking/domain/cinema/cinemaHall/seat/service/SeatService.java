@@ -84,20 +84,24 @@ public class SeatService implements ISeatService {
     @Transactional
     public CompletableFuture<Void> generateSeatsAsync(CinemaHallEntity cinemaHall) {
         String rows = "ABCDEFGHIJKL";
-        List<SeatEntity> seats = rows.chars()
-                .mapToObj(row -> (char) row)
-                .flatMap(row -> IntStream.rangeClosed(1, 14)
-                        .mapToObj(col -> {
-                            SeatType type = SeatType.STANDARD;
-                            if (row == 'L') {
-                                type = SeatType.COUPLE;
-                            } else if ((row == 'E' || row == 'H' || row == 'F' || row == 'G') && col >= 5 && col <= 10) {
-                                type = SeatType.VIP;
-                            }
-                            return new SeatEntity(String.valueOf(row), col, type, SeatStatus.AVAILABLE, cinemaHall, cinemaHall.getCreatedBy(), cinemaHall.getUpdatedBy());
-                        })
-                ).collect(Collectors.toList());
+
+        List<SeatEntity> seats = rows.chars().mapToObj(row -> (char) row).flatMap(row -> IntStream.rangeClosed(1, 14).mapToObj(col -> {
+            SeatType type = SeatType.STANDARD;
+            if (row == 'L') {
+                type = SeatType.COUPLE;
+            } else if ((row == 'E' || row == 'H' || row == 'F' || row == 'G') && col >= 5 && col <= 10) {
+                type = SeatType.VIP;
+            }
+            int price = switch (type) {
+                case VIP -> 70000;
+                case COUPLE -> 140000;
+                default -> 55000;
+            };
+            return new SeatEntity(String.valueOf(row), col, type, SeatStatus.AVAILABLE, price, cinemaHall, cinemaHall.getCreatedBy(), cinemaHall.getUpdatedBy());
+        })).collect(Collectors.toList());
         repository.saveAll(seats);
+        cinemaHall.setTotalSeats(seats.size());
+        cinemaHallRepository.save(cinemaHall);
         return CompletableFuture.completedFuture(null);
     }
 

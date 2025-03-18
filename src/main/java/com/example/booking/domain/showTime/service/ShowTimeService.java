@@ -1,0 +1,82 @@
+package com.example.booking.domain.showTime.service;
+
+import com.example.booking.common.pagination.PageDto;
+import com.example.booking.domain.cinema.cinemaHall.cinemaHall.repository.CinemaHallRepository;
+import com.example.booking.domain.movie.movie.repository.MovieRepository;
+import com.example.booking.domain.showTime.dto.CreateShowTimeDto;
+import com.example.booking.domain.showTime.dto.ShowTimeResponseDto;
+import com.example.booking.domain.showTime.dto.UpdateShowTimeDto;
+import com.example.booking.domain.showTime.entity.ShowTimeEntity;
+import com.example.booking.domain.showTime.mapper.ShowTimeMapper;
+import com.example.booking.domain.showTime.repository.ShowTimeRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class ShowTimeService implements IShowTimeService {
+
+    private final ShowTimeRepository repository;
+    private final ShowTimeMapper mapper;
+    private final MovieRepository movieRepository;
+    private final CinemaHallRepository cinemaHallRepository;
+
+    public ShowTimeService(ShowTimeRepository repository, ShowTimeMapper mapper, MovieRepository movieRepository,
+                           CinemaHallRepository cinemaHallRepository) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.movieRepository = movieRepository;
+        this.cinemaHallRepository = cinemaHallRepository;
+    }
+
+    @Override
+    public ShowTimeResponseDto getEntityById(UUID id) {
+        return mapper.toResponse(repository.findById(id).orElseThrow(() -> new EntityNotFoundException("ShowTime not found", new Exception("id"))));
+    }
+
+    @Override
+    public List<ShowTimeResponseDto> getAllEntity() {
+        return repository.findAll().stream().map(mapper::toResponse).toList();
+    }
+
+    @Override
+    public ShowTimeResponseDto createEntity(CreateShowTimeDto dto) {
+        long count = repository.countOverlappingShowtimes(dto.getCinemaHallId(), dto.getShowTime());
+        if (count > 0) {
+            throw new IllegalArgumentException("2 showtimes in the same theater must be at least 2 hours apart from the nearest showtime!", new Throwable("showTime"));
+        }
+        ShowTimeEntity entity = mapper.toEntity(dto);
+        entity.setMovie(movieRepository.findById(dto.getMovieId()).orElseThrow(() -> new EntityNotFoundException("Movie not found", new Exception("movieId"))));
+        entity.setCinemaHall(cinemaHallRepository.findById(dto.getCinemaHallId()).orElseThrow(() -> new EntityNotFoundException("CinemaHall not found", new Exception("cinemaHallId"))));
+        return mapper.toResponse(repository.save(entity));
+    }
+
+    @Override
+    public ShowTimeResponseDto updateEntity(UUID id, UpdateShowTimeDto dto) {
+        long count = repository.countOverlappingShowtimes(dto.getCinemaHallId(), dto.getShowTime());
+        if (count > 0) {
+            throw new IllegalArgumentException("2 showtimes in the same theater must be at least 2 hours apart from the nearest showtime!", new Throwable("showTime"));
+        }
+        ShowTimeEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("ShowTime not found", new Exception("id")));
+        mapper.updateEntityFromDto(dto, entity);
+        entity.setMovie(movieRepository.findById(dto.getMovieId()).orElseThrow(() -> new EntityNotFoundException("Movie not found", new Exception("movieId"))));
+        entity.setCinemaHall(cinemaHallRepository.findById(dto.getCinemaHallId()).orElseThrow(() -> new EntityNotFoundException("CinemaHall not found", new Exception("cinemaHallId"))));
+        return mapper.toResponse(repository.save(entity));
+    }
+
+    @Override
+    public void deleteEntity(UUID id) {
+        ShowTimeEntity entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("ShowTime not found", new Exception("id")));
+        repository.delete(entity);
+    }
+
+    @Override
+    public PageDto<ShowTimeResponseDto> searchEntity(Specification<ShowTimeEntity> spec, Pageable pageable) {
+        return new PageDto<>(repository.findAll(spec, pageable).map(mapper::toResponse));
+    }
+
+}
