@@ -37,6 +37,10 @@ spring:
           starttls:
             enable: true
           from: testmeusolution@gmail.com
+  data:
+    redis:
+      host: localhost
+      port: 6379
 springdoc:
   swagger-ui:
     tagsSorter: alpha
