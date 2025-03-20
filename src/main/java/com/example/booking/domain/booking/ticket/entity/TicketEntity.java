@@ -1,7 +1,11 @@
 package com.example.booking.domain.booking.ticket.entity;
 
+import com.example.booking.common.enums.status.TicketStatus;
+import com.example.booking.common.enums.type.TicketType;
+import com.example.booking.domain.booking.booking.entity.BookingEntity;
 import com.example.booking.domain.cinema.cinemaHall.seat.entity.SeatEntity;
 import com.example.booking.domain.showTime.entity.ShowTimeEntity;
+import com.example.booking.domain.user.user.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,11 +40,24 @@ public class TicketEntity {
     @JoinColumn(name = "show_time_id")
     private ShowTimeEntity showTime;
 
+    @Column(name = "price")
+    private double price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ticket_type")
+    private TicketType ticketType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ticket_status")
+    private TicketStatus ticketStatus;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")
     private SeatEntity seat;
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private BookingEntity booking;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)

@@ -7,6 +7,22 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-
+#  postgres:
+#    image: postgres:14  # Chọn image PostgreSQL version 14 (hoặc version khác nếu cần)
+#    container_name: booking-be  # Tên container
+#    environment:
+#      POSTGRES_USER: postgres  # Tên người dùng PostgreSQL
+#      POSTGRES_PASSWORD: 123456  # Mật khẩu của người dùng
+#      POSTGRES_DB: booking-fe  # Tên database mặc định
+#    ports:
+#      - "5432:5432"  # Mở cổng 5432 của PostgreSQL ra ngoài
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data  # Mount volume để lưu trữ dữ liệu
+#    networks:
+#      - mynetwork  # Định nghĩa mạng cho container này
 volumes:
   redis_data:
+#  postgres_data:
+#networks:
+#  mynetwork:  # Định nghĩa mạng
+#    driver: bridge
