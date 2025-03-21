@@ -6,6 +6,7 @@ import com.example.booking.domain.booking.booking.entity.BookingEntity;
 import com.example.booking.domain.cinema.cinemaHall.seat.entity.SeatEntity;
 import com.example.booking.domain.showTime.entity.ShowTimeEntity;
 import com.example.booking.domain.user.user.entity.UserEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -56,6 +57,7 @@ public class TicketEntity {
     private SeatEntity seat;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "booking_id")
     private BookingEntity booking;
 

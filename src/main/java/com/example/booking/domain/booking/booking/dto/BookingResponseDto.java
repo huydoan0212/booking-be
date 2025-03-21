@@ -2,10 +2,12 @@ package com.example.booking.domain.booking.booking.dto;
 
 import com.example.booking.common.enums.status.BookingStatus;
 import com.example.booking.common.enums.status.PaymentStatus;
+import com.example.booking.domain.booking.ticket.dto.TicketResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -19,5 +21,6 @@ public class BookingResponseDto {
     private UUID userId;
     private BookingStatus bookingStatus;
     private PaymentStatus paymentStatus;
+    private List<TicketResponseDto> tickets;
     private OffsetDateTime createdAt;
 }

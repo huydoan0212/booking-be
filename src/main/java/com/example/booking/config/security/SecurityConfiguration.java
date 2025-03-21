@@ -55,7 +55,10 @@ public class SecurityConfiguration {
                                 "/cinema/**",
                                 "/cinema-hall/**",
                                 "/seat/**",
-                                "/show-time/**")
+                                "/show-time/**",
+                                "/booking/**",
+                                "/discount/**",
+                                "/ticket/**")
                         .permitAll()
                         // AUTHENTICATED APIs - Requires login
                         .requestMatchers(HttpMethod.GET, "/user/profile").authenticated()
@@ -73,7 +76,10 @@ public class SecurityConfiguration {
                                 "/cinema/**",
                                 "/cinema-hall/**",
                                 "/seat/**",
-                                "/show-time/**").hasRole(ADMIN.toString())
+                                "/show-time/**",
+                                "/booking/**",
+                                "/discount/**",
+                                "/ticket/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.PUT,
                                 "/user/{id}",
                                 "/movie/**",
@@ -81,7 +87,10 @@ public class SecurityConfiguration {
                                 "/cinema/**",
                                 "/cinema-hall/**",
                                 "/seat/**",
-                                "/show-time/**").hasRole(ADMIN.toString())
+                                "/show-time/**",
+                                "/booking/**",
+                                "/discount/**",
+                                "/ticket/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.DELETE,
                                 "/user/{id}",
                                 "/movie/**",
@@ -89,7 +98,10 @@ public class SecurityConfiguration {
                                 "/cinema/**",
                                 "/cinema-hall/**",
                                 "/seat/**",
-                                "/show-time/**").hasRole(ADMIN.toString()))
+                                "/show-time/**",
+                                "/booking/**",
+                                "/discount/**",
+                                "/ticket/**").hasRole(ADMIN.toString()))
 
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.accessDeniedHandler((request, response, e) -> {
                             GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.FORBIDDEN, HttpStatus.FORBIDDEN.value(), new Violation(null, "You don't have permission to access this resource"), request.getRequestURI());

@@ -4,6 +4,8 @@ import com.example.booking.config.security.jwt.JwtAuthenticationFilter;
 import com.example.booking.domain.user.user.AuditorAwareImpl;
 import com.example.booking.domain.user.user.entity.UserEntity;
 import com.example.booking.domain.user.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,14 +30,6 @@ public class ApplicationConfiguration {
 
     private final UserRepository userRepository;
 
-//    @Value("${url.bay-tau}")
-//    private String BAY_TAU_URL;
-//
-//    @Value("${url.fe-dev}")
-//    private String FE_DEV_URL;
-//
-//    @Value("${url.fe-staging}")
-//    private String FE_STAGING_URL;
 
     public ApplicationConfiguration(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -99,5 +93,9 @@ public class ApplicationConfiguration {
         return new JwtAuthenticationFilter();
     }
 
+//    @Bean
+//    public ObjectMapper objectMapper() {
+//        return new ObjectMapper().registerModule(new JavaTimeModule());
+//    }
 
 }

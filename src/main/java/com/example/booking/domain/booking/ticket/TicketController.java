@@ -5,12 +5,14 @@ import com.example.booking.common.pagination.PageOptionsDto;
 import com.example.booking.common.template.CRUDController;
 import com.example.booking.domain.booking.ticket.dto.CreateTicketDto;
 import com.example.booking.domain.booking.ticket.dto.TicketResponseDto;
+import com.example.booking.domain.booking.ticket.dto.TicketStatusMessage;
 import com.example.booking.domain.booking.ticket.dto.UpdateTicketDto;
 import com.example.booking.domain.booking.ticket.entity.TicketEntity;
 import com.example.booking.domain.booking.ticket.service.ITicketService;
 import com.turkraft.springfilter.converter.FilterSpecification;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,9 +25,11 @@ import java.util.UUID;
 public class TicketController implements CRUDController<TicketEntity, CreateTicketDto, UpdateTicketDto, TicketResponseDto> {
 
     private final ITicketService service;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public TicketController(ITicketService service) {
+    public TicketController(ITicketService service, SimpMessagingTemplate messagingTemplate) {
         this.service = service;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -56,5 +60,11 @@ public class TicketController implements CRUDController<TicketEntity, CreateTick
     @Override
     public PageDto<TicketResponseDto> search(FilterSpecification<TicketEntity> spec, PageOptionsDto dto) {
         return service.searchEntity(spec, dto.toPageable());
+    }
+
+    public void broadcastTicketStatus(UUID showTimeId, UUID ticketId, String status) {
+        TicketStatusMessage message = new TicketStatusMessage(ticketId, status);
+        // Gửi tới topic được client subscribe, ví dụ: /topic/tickets/{showTimeId}
+        messagingTemplate.convertAndSend("/topic/tickets/" + showTimeId, message);
     }
 }

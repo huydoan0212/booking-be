@@ -82,6 +82,7 @@ public class SeatService implements ISeatService {
 
     @Async
     @Transactional
+    @Override
     public CompletableFuture<Void> generateSeatsAsync(CinemaHallEntity cinemaHall) {
         String rows = "ABCDEFGHIJKL";
 

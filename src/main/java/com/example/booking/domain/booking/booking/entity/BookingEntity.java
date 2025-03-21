@@ -3,6 +3,7 @@ package com.example.booking.domain.booking.booking.entity;
 import com.example.booking.common.enums.status.BookingStatus;
 import com.example.booking.common.enums.status.PaymentStatus;
 import com.example.booking.domain.booking.discount.entity.DiscountEntity;
+import com.example.booking.domain.booking.ticket.entity.TicketEntity;
 import com.example.booking.domain.user.user.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -17,6 +18,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -24,7 +26,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "discounts")
+@Table(name = "bookings")
 @EntityListeners(AuditingEntityListener.class)
 public class BookingEntity {
     @Id
@@ -55,6 +57,9 @@ public class BookingEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<TicketEntity> tickets;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
