@@ -27,6 +27,8 @@ public class MovieResponseDto {
     private String director;
     private String producers;
     private String country;
+    private OffsetDateTime startDate;
+    private OffsetDateTime endDate;
     private List<CategoryResponseDto> categories;
     private OffsetDateTime createdAt;
 }
