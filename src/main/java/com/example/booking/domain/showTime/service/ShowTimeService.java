@@ -2,7 +2,6 @@ package com.example.booking.domain.showTime.service;
 
 import com.example.booking.common.pagination.PageDto;
 import com.example.booking.domain.booking.ticket.service.ITicketService;
-import com.example.booking.domain.booking.ticket.service.TicketService;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.entity.CinemaHallEntity;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.repository.CinemaHallRepository;
 import com.example.booking.domain.movie.movie.entity.MovieEntity;
@@ -19,7 +18,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -104,4 +105,16 @@ public class ShowTimeService implements IShowTimeService {
         return new PageDto<>(repository.findAll(spec, pageable).map(mapper::toResponse));
     }
 
+    @Transactional
+    @Override
+    public boolean createShowTimes(UUID movieId, List<CreateShowTimeDto> createShowTimeDtos) {
+        for (CreateShowTimeDto dto : createShowTimeDtos) {
+            dto.setMovieId(movieId);
+            ShowTimeResponseDto response = createEntity(dto);
+            if(Objects.isNull(response)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

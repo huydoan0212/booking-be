@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.Arrays.stream;
+
 @Service
 public class TicketService implements ITicketService {
 
@@ -125,6 +127,14 @@ public class TicketService implements ITicketService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create tickets", e);
         }
+    }
+
+    @Override
+    public List<TicketResponseDto> getTicketsByShowTime(UUID showTimeId) {
+        return repository.findAllByShowTimeId(showTimeId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
 

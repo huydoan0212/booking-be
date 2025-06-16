@@ -4,9 +4,11 @@ import java.util.UUID;
 
 public interface ITicketReservationService {
 
-    void reserveTicket(UUID showTimeId, UUID ticketId, UUID userId);
+    boolean lockSeat(UUID showtimeId, UUID ticketId, UUID userId);
 
-    boolean isTicketReserved(UUID showTimeId, UUID ticketId);
+    boolean unlockSeat(UUID showtimeId, UUID ticketId, UUID userId);
 
-    void releaseTicket(UUID showTimeId, UUID ticketId);
+    UUID getLockOwner(UUID showtimeId, UUID ticketId);
+
+    TicketReservationService.AllHoldInfo getAllHolds(UUID showtimeId, UUID userId);
 }

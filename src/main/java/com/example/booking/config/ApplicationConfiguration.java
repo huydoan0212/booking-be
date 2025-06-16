@@ -5,6 +5,7 @@ import com.example.booking.domain.user.user.AuditorAwareImpl;
 import com.example.booking.domain.user.user.entity.UserEntity;
 import com.example.booking.domain.user.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.context.annotation.Bean;
@@ -98,4 +99,13 @@ public class ApplicationConfiguration {
 //        return new ObjectMapper().registerModule(new JavaTimeModule());
 //    }
 
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper om = new ObjectMapper();
+        // đăng ký module để hỗ trợ java.time.*
+        om.registerModule(new JavaTimeModule());
+        // nếu bạn muốn xuất dates dưới dạng ISO strings (không phải timestamps)
+        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return om;
+    }
 }

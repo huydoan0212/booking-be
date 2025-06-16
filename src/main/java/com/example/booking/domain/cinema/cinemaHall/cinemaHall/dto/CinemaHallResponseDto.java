@@ -1,5 +1,6 @@
 package com.example.booking.domain.cinema.cinemaHall.cinemaHall.dto;
 
+import com.example.booking.domain.cinema.cinema.dto.CinemaResponseDto;
 import com.example.booking.domain.cinema.cinemaHall.seat.dto.SeatResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class CinemaHallResponseDto {
     private int totalSeats;
     private String screenType;
     private String soundSystem;
+    private CinemaResponseDto cinema;
     private OffsetDateTime createdAt;
-    private List<SeatResponseDto> seats;
+//    private List<SeatResponseDto> seats;
 }

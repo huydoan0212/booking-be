@@ -7,6 +7,7 @@ import com.example.booking.domain.booking.ticket.dto.UpdateTicketDto;
 import com.example.booking.domain.booking.ticket.entity.TicketEntity;
 import com.example.booking.domain.showTime.entity.ShowTimeEntity;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -14,4 +15,6 @@ public interface ITicketService extends ICRUDService<TicketEntity, CreateTicketD
 
     void createListTicketForShowTime(ShowTimeEntity showTimeEntity);
 
+
+    List<TicketResponseDto> getTicketsByShowTime(UUID showTimeId);
 }

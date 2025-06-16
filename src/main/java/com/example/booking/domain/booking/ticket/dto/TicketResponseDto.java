@@ -18,11 +18,11 @@ import java.util.UUID;
 public class TicketResponseDto {
     private UUID id;
     private String ticketCode;
-    private ShowTimeResponseDto showTime;
+//    private ShowTimeResponseDto showTime;
     private double price;
     private TicketType ticketType;
     private TicketStatus ticketStatus;
     private SeatResponseDto seat;
-    private BookingResponseDto booking;
+//    private BookingResponseDto booking;
     private OffsetDateTime createdAt;
 }

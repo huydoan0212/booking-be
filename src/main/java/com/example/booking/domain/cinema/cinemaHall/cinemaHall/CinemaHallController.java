@@ -63,7 +63,7 @@ public class CinemaHallController implements CRUDController<CinemaHallEntity, Cr
 
     @SecurityRequirement(name = Constant.AUTH_GUARD)
     @PostMapping("/creates")
-    public List<CinemaHallResponseDto> creates(@RequestParam UUID cinemaID, @RequestBody List<CreateCinemaHallsDto> dtos) {
+    public boolean creates(@RequestParam UUID cinemaID, @RequestBody List<CreateCinemaHallsDto> dtos) {
         return service.creates(cinemaID, dtos);
     }
 }

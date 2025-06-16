@@ -80,7 +80,7 @@ public class CinemaHallService implements ICinemaHallService {
 
     @Override
     @Transactional
-    public List<CinemaHallResponseDto> creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos) {
+    public boolean creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos) {
         CinemaEntity cinema = cinemaRepository.findById(cinemaID)
                 .orElseThrow(() -> new EntityNotFoundException("Cinema not found"));
 
@@ -91,7 +91,7 @@ public class CinemaHallService implements ICinemaHallService {
         }).toList();
         List<CinemaHallEntity> savedCinemaHalls = repository.saveAll(cinemaHalls);
         savedCinemaHalls.forEach(seatService::generateSeatsAsync);
-        return savedCinemaHalls.stream().map(mapper::toResponse).toList();
+        return true;
     }
 
 
