@@ -12,6 +12,6 @@ import java.util.UUID;
 
 public interface ICinemaHallService extends ICRUDService<CinemaHallEntity, CreateCinemaHallDto, UpdateCinemaHallDto, CinemaHallResponseDto> {
 
-    List<CinemaHallResponseDto> creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos);
+    boolean creates(UUID cinemaID, List<CreateCinemaHallsDto> dtos);
 
 }

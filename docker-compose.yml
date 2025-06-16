@@ -1,5 +1,5 @@
-version: "3.8"
 services:
+  # Redis service
   redis:
     image: redis:6.2
     container_name: redis
@@ -7,22 +7,51 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-#  postgres:
-#    image: postgres:14  # Chọn image PostgreSQL version 14 (hoặc version khác nếu cần)
-#    container_name: booking-be  # Tên container
-#    environment:
-#      POSTGRES_USER: postgres  # Tên người dùng PostgreSQL
-#      POSTGRES_PASSWORD: 123456  # Mật khẩu của người dùng
-#      POSTGRES_DB: booking-fe  # Tên database mặc định
-#    ports:
-#      - "5432:5432"  # Mở cổng 5432 của PostgreSQL ra ngoài
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data  # Mount volume để lưu trữ dữ liệu
-#    networks:
-#      - mynetwork  # Định nghĩa mạng cho container này
+
+  redisinsight:
+    image: redis/redisinsight:2.66
+    container_name: redis-insight
+    ports:
+      - "5540:8001"
+    environment:
+      - RI_HOST=0.0.0.0
+    depends_on:
+      - redis
+
+  # PostgreSQL service (commented out by default)
+  # postgres:
+  #   image: postgres:14
+  #   container_name: booking-be
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: 123456
+  #     POSTGRES_DB: booking-fe
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - mynetwork
+
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: admin
+  #     RABBITMQ_DEFAULT_PASS: admin
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   networks:
+  #     - mynetwork
+
 volumes:
-  redis_data:
-#  postgres_data:
-#networks:
-#  mynetwork:  # Định nghĩa mạng
-#    driver: bridge
+  redis_data: {}
+  # postgres_data: {}
+  rabbitmq_data: {}
+
+# networks:
+#   mynetwork:
+#     driver: bridge

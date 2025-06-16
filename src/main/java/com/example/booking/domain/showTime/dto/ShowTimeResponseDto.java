@@ -16,7 +16,7 @@ public class ShowTimeResponseDto {
     private String language;
     private String subtitle;
     private String screenFormat;
-    private MovieResponseDto movie;
+//    private MovieResponseDto movie;
     private CinemaHallResponseDto cinemaHall;
     private OffsetDateTime createdAt;
 }

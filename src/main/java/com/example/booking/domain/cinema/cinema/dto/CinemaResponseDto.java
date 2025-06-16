@@ -22,6 +22,6 @@ public class CinemaResponseDto {
     private String imagePortrait;
     private int sortOrder;
     private List<String> imgUrls;
-    private List<CinemaHallResponseDto> cinemaHalls;
+//    private List<CinemaHallResponseDto> cinemaHalls;
     private OffsetDateTime createdAt;
 }

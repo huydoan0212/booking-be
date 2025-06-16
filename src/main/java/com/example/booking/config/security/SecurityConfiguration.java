@@ -26,22 +26,26 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfiguration(AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfiguration(AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationProvider = authenticationProvider;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(authorizeRequests -> authorizeRequests
-
+                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
                         // PUBLIC APIs - Accessible to everyone
                         .requestMatchers("/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/webjars/**").permitAll()
+                                "/webjars/**",
+                                "/ws-ticket/**",
+                                "/app/**").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/auth/login",
                                 "/user/forgot-password",
@@ -103,20 +107,33 @@ public class SecurityConfiguration {
                                 "/discount/**",
                                 "/ticket/**").hasRole(ADMIN.toString()))
 
-                .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer.accessDeniedHandler((request, response, e) -> {
-                            GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.FORBIDDEN, HttpStatus.FORBIDDEN.value(), new Violation(null, "You don't have permission to access this resource"), request.getRequestURI());
+                .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer
+                        .accessDeniedHandler((request, response, e) -> {
+                            GlobalResponse globalResponse = new GlobalResponse(
+                                    ExceptionMessage.FORBIDDEN,
+                                    HttpStatus.FORBIDDEN.value(),
+                                    new Violation(null, "You don't have permission to access this resource"),
+                                    request.getRequestURI()
+                            );
                             response.setContentType("application/json;charset=UTF-8");
                             response.setStatus(HttpStatus.FORBIDDEN.value());
                             response.getWriter().write(new ObjectMapper().writeValueAsString(globalResponse));
                         })
 
                         .authenticationEntryPoint((request, response, e) -> {
-                            GlobalResponse globalResponse = new GlobalResponse(ExceptionMessage.UNAUTHORIZED, HttpStatus.UNAUTHORIZED.value(), new Violation(null, "Access denied"), request.getRequestURI());
+                            GlobalResponse globalResponse = new GlobalResponse(
+                                    ExceptionMessage.UNAUTHORIZED,
+                                    HttpStatus.UNAUTHORIZED.value(),
+                                    new Violation(null, "Access denied"),
+                                    request.getRequestURI()
+                            );
                             response.setContentType("application/json;charset=UTF-8");
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-
-                            response.getWriter().write(new ObjectMapper().writeValueAsString(globalResponse));
-                        })).authenticationProvider(authenticationProvider).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                            response.getWriter().write(objectMapper.writeValueAsString(globalResponse));
+                        })
+                )
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
