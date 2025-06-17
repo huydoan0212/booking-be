@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -94,9 +95,12 @@ public class TicketController implements CRUDController<TicketEntity, CreateTick
     @MessageMapping("/lock-seat")
     public void lockSeat(SeatLockMessage msg, @Header("simpSessionId") String sessionId) {
         UUID showtimeId = msg.getShowTimeId();
-        UUID ticketId   = msg.getTicketId();
-        UUID userId     = msg.getUserId();
-        boolean locked = ticketReservationService.lockSeat(showtimeId, ticketId, userId);
+        UUID ticketId = msg.getTicketId();
+        UUID userId = msg.getUserId();
+        double price = msg.getPrice();
+        String seatLabel = msg.getSeatLabel();
+        String seatType = msg.getSeatType();
+        boolean locked = ticketReservationService.lockSeat(showtimeId, ticketId, userId, price, seatLabel, seatType);
         if (locked) {
             Map<String, Object> payload = new HashMap<>();
             payload.put("ticketId", ticketId);
@@ -128,8 +132,8 @@ public class TicketController implements CRUDController<TicketEntity, CreateTick
     @MessageMapping("/unlock-seat")
     public void unlockSeat(SeatLockMessage msg) {
         UUID showtimeId = msg.getShowTimeId();
-        UUID ticketId   = msg.getTicketId();
-        UUID userId     = msg.getUserId();
+        UUID ticketId = msg.getTicketId();
+        UUID userId = msg.getUserId();
 
         boolean unlocked = ticketReservationService.unlockSeat(showtimeId, ticketId, userId);
         if (unlocked) {
@@ -143,10 +147,18 @@ public class TicketController implements CRUDController<TicketEntity, CreateTick
         }
     }
 
+    @MessageMapping("/release-all-hold")
+    public void releaseAllHolds(
+            @Payload ReleaseHoldRequest req
+    ) {
+        ticketReservationService.releaseAllHolds(req.getShowTimeId(),
+                req.getUserId());
+    }
+
     @GetMapping("/hold/{showtimeId}/user/{userId}")
     public TicketReservationService.AllHoldInfo getAllHolds(
-            @PathVariable UUID showtimeId,
-            @PathVariable UUID userId
+            @PathVariable("showtimeId") UUID showtimeId,
+            @PathVariable("userId") UUID userId
     ) {
         return ticketReservationService.getAllHolds(showtimeId, userId);
     }

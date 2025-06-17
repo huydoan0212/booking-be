@@ -17,107 +17,139 @@ public class TicketReservationService implements ITicketReservationService {
 
     private static final long HOLD_EXPIRE_SECONDS = 420; // 7 phút
 
-    // Key mẫu:
-    //   holdKey       = "hold:show:{showtimeId}:user:{userId}"
-    //   holdSetKey    = "hold:show:{showtimeId}:user:{userId}:tickets"
-    //   lockKey       = "lock:show:{showtimeId}:ticket:{ticketId}"
-    private static final String HOLD_KEY_FMT    = "hold:show:%s:user:%s";
-    private static final String HOLD_SET_FMT    = "hold:show:%s:user:%s:tickets";
-    private static final String LOCK_KEY_FMT    = "lock:show:%s:ticket:%s";
-    private static final String HOLD_KEY_PATTERN = "hold:show:%s:user:*:tickets";
+    // Key templates
+    private static final String HOLD_KEY_FMT = "hold:show:%s:user:%s";
+    private static final String HOLD_HASH_FMT = "hold:show:%s:user:%s:tickets";
+    private static final String LOCK_KEY_FMT = "lock:show:%s:ticket:%s";
+    private static final String HOLD_KEY_PATTERN = "hold:show:%s:user:*";
 
     private final RedisTemplate<String, String> redisTemplate;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public TicketReservationService(
-            RedisTemplate<String, String> redisTemplate,
-            SimpMessagingTemplate messagingTemplate) {
+    public TicketReservationService(RedisTemplate<String, String> redisTemplate, SimpMessagingTemplate messagingTemplate) {
         this.redisTemplate = redisTemplate;
         this.messagingTemplate = messagingTemplate;
     }
 
     /**
-     * Khởi tạo “hold key” 7 phút cho user.
-     * Nếu holdKey đã tồn tại, giữ nguyên TTL, không reset lại.
+     * Initialize or keep holdKey with TTL.
      */
     public void startHold(UUID showtimeId, UUID userId) {
         String holdKey = String.format(HOLD_KEY_FMT, showtimeId, userId);
-        Boolean exists = redisTemplate.hasKey(holdKey);
-        if (Boolean.TRUE.equals(exists)) {
-            // đã có hold key, không làm gì thêm
-            return;
-        }
-        // Tạo key với value = userId và TTL = 7 phút
-        redisTemplate.opsForValue().set(
-                holdKey,
-                userId.toString(),
-                Duration.ofSeconds(HOLD_EXPIRE_SECONDS)
-        );
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(holdKey))) return;
+        redisTemplate.opsForValue().set(holdKey, userId.toString(), Duration.ofSeconds(HOLD_EXPIRE_SECONDS));
     }
 
     /**
-     * Thử lock ghế:
-     *  1. Đảm bảo holdKey (startHold) đã được gọi trước ít nhất một lần.
-     *  2. Tạo riêng lockKey cho ticket với TTL = 7 phút.
-     *  3. Thêm ticketId vào Set để sau này dễ dọn dẹp.
+     * Lock ticket and store ticketId|price|seatLabel|seatType in Redis hash.
      */
-    public boolean lockSeat(UUID showtimeId, UUID ticketId, UUID userId) {
-        // 1. Tạo hoặc giữ nguyên HOLD
+    public boolean lockSeat(UUID showtimeId, UUID ticketId, UUID userId, double price, String seatLabel, String seatType) {
         startHold(showtimeId, userId);
-
-        // 2. Lock riêng cho ticket
         String lockKey = String.format(LOCK_KEY_FMT, showtimeId, ticketId);
-        String value = userId.toString();
-        Boolean success = redisTemplate.opsForValue()
-                .setIfAbsent(lockKey, value, Duration.ofSeconds(HOLD_EXPIRE_SECONDS));
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(lockKey, userId.toString(), Duration.ofSeconds(HOLD_EXPIRE_SECONDS));
         if (Boolean.TRUE.equals(success)) {
-            // 3. Nếu lock thành công, thêm ticketId vào Set
-            String holdSetKey = String.format(HOLD_SET_FMT, showtimeId, userId);
-            redisTemplate.opsForSet().add(holdSetKey, ticketId.toString());
-            // Đặt TTL cho Set giống TTL của holdKey (nếu chưa có, expire thiết lập lại)
-            redisTemplate.expire(holdSetKey, Duration.ofSeconds(HOLD_EXPIRE_SECONDS));
+            String holdHashKey = String.format(HOLD_HASH_FMT, showtimeId, userId);
+            String value = String.join("|", ticketId.toString(), String.valueOf(price), seatLabel, seatType);
+            redisTemplate.opsForHash().put(holdHashKey, ticketId.toString(), value);
+            redisTemplate.expire(holdHashKey, Duration.ofSeconds(HOLD_EXPIRE_SECONDS));
             return true;
         }
         return false;
     }
 
     /**
-     * Thử unlock ghế (bỏ chọn):
-     * Xóa riêng lockKey và remove ticketId khỏi Set.
+     * Unlock seat: remove field from hash to preserve other holds.
      */
     public boolean unlockSeat(UUID showtimeId, UUID ticketId, UUID userId) {
+        // Tên các key
         String lockKey = String.format(LOCK_KEY_FMT, showtimeId, ticketId);
+        String holdHashKey = String.format(HOLD_HASH_FMT, showtimeId, userId);
 
-        // Chỉ kiểm tra nếu key do user này giữ, KHÔNG xóa key
-        String luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then " +
-                " return 1 " + // Trả về 1 nếu hợp lệ, nhưng không xóa key
-                "else return 0 end";
+        // Chỉ cho phép unlock nếu chính user này đã lock (Lua script)
+        String lua = ""
+                + "if redis.call('get', KEYS[1]) == ARGV[1] then "
+                + "  return 1 "
+                + "else "
+                + "  return 0 "
+                + "end";
 
-        RedisCallback<Long> callback = connection -> {
-            byte[] rawKey = lockKey.getBytes(StandardCharsets.UTF_8);
-            byte[] rawVal = userId.toString().getBytes(StandardCharsets.UTF_8);
-            return connection.eval(
-                    luaScript.getBytes(StandardCharsets.UTF_8),
-                    ReturnType.INTEGER,
-                    1,
-                    rawKey,
-                    rawVal
-            );
-        };
-
+        RedisCallback<Long> callback = conn -> conn.eval(
+                lua.getBytes(StandardCharsets.UTF_8),
+                ReturnType.INTEGER,
+                1,
+                lockKey.getBytes(StandardCharsets.UTF_8),
+                userId.toString().getBytes(StandardCharsets.UTF_8)
+        );
         Long result = redisTemplate.execute(callback);
         if (result != null && result > 0) {
-            // Xóa ticketId khỏi Set
-            String holdSetKey = String.format(HOLD_SET_FMT, showtimeId, userId);
-            redisTemplate.opsForSet().remove(holdSetKey, ticketId.toString());
+            // Xóa entry trong Hash để bỏ thông tin vé đã hold
+            redisTemplate.opsForHash().delete(holdHashKey, ticketId.toString());
 
-            // ❗Không xóa key lock => vẫn giữ thời gian giữ chỗ
+            // Xóa luôn lockKey để giải phóng vé
+            redisTemplate.delete(lockKey);
+// **Broadcast UNLOCKED để FE cập nhật UI ngay**
+            messagingTemplate.convertAndSend(
+                    "/topic/seat-status/" + showtimeId,
+                    Map.of(
+                            "ticketId", ticketId,
+                            "status", "AVAILABLE",
+                            "userId", userId
+                    )
+            );
+            // Lưu ý: không xóa holdKey, nên TTL của phiên giữ vé vẫn chạy tiếp
             return true;
         }
         return false;
     }
 
+
+    /**
+     * Get all held tickets with price, label, seatType, plus secondsRemaining.
+     */
+    // 2) Cập nhật getAllHolds
+    public AllHoldInfo getAllHolds(UUID showtimeId, UUID userId) {
+        String myHashKey = String.format(HOLD_HASH_FMT, showtimeId, userId);
+
+        // --- heldTickets của chính user ---
+        Map<Object, Object> myEntries = redisTemplate.opsForHash().entries(myHashKey);
+        List<HeldTicket> heldTickets = new ArrayList<>();
+        for (Object val : myEntries.values()) {
+            heldTickets.add(parseHeldTicket(val.toString()));
+        }
+
+        // TTL của phiên giữ chỗ
+        String holdKey = String.format(HOLD_KEY_FMT, showtimeId, userId);
+        Long ttl = redisTemplate.getExpire(holdKey, TimeUnit.SECONDS);
+        long secondsRemaining = ttl != null && ttl > 0 ? ttl : 0;
+
+        // --- otherHeldTickets: scan tất cả hash keys của showtime ---
+        String pattern = String.format(HOLD_HASH_FMT, showtimeId, "*");
+        Set<String> allKeys = redisTemplate.keys(pattern);
+        List<HeldTicket> otherHeld = new ArrayList<>();
+
+        if (allKeys != null) {
+            for (String hashKey : allKeys) {
+                if (hashKey.equals(myHashKey)) continue;  // bỏ qua chính user
+                Map<Object, Object> entries = redisTemplate.opsForHash().entries(hashKey);
+                for (Object val : entries.values()) {
+                    otherHeld.add(parseHeldTicket(val.toString()));
+                }
+            }
+        }
+
+        return new AllHoldInfo(heldTickets, secondsRemaining, otherHeld);
+    }
+
+    // Helper method để parse một value "ticketId|price|label|type"
+    private HeldTicket parseHeldTicket(String csv) {
+        String[] parts = csv.split("\\|");
+        UUID tId       = UUID.fromString(parts[0]);
+        double price   = Double.parseDouble(parts[1]);
+        String label   = parts[2];
+        String type    = parts[3];
+        return new HeldTicket(tId, price, label, type);
+    }
 
     /**
      * Lấy owner hiện tại (userId) của khóa ghế, hoặc null nếu chưa có khóa.
@@ -134,106 +166,56 @@ public class TicketReservationService implements ITicketReservationService {
     }
 
     /**
-     * Scheduler chạy mỗi 10s để kiểm tra xem có holdKey nào đã hết TTL không.
-     * Nếu đã hết, gọi releaseAllHolds để xóa tất cả lockKey của user đó,
-     * broadcast “UNLOCK_TIMEOUT” cho từng ticketId đã lock, rồi xóa holdKey và Set.
+     * Scheduled cleanup expired holds and notify timeout.
      */
     @Scheduled(fixedDelay = 10000)
     public void checkExpiredHolds() {
-        // Scan mọi key dạng “hold:show:*:user:*”
-        ScanOptions options = ScanOptions.scanOptions()
-                .match("hold:show:*:user:*")
+        // Chỉ scan hash keys (nơi giữ thông tin vé)
+        String pattern = String.format(HOLD_HASH_FMT, "*", "*");
+        ScanOptions opts = ScanOptions.scanOptions()
+                .match(pattern)
                 .count(100)
                 .build();
 
-        Cursor<byte[]> cursor = (Cursor<byte[]>) redisTemplate.getConnectionFactory()
-                .getConnection()
-                .scan(options);
+        try (Cursor<byte[]> cursor =
+                     (Cursor<byte[]>) redisTemplate.getConnectionFactory()
+                             .getConnection()
+                             .scan(opts)) {
 
-        while (cursor.hasNext()) {
-            String holdKey = new String(cursor.next(), StandardCharsets.UTF_8);
-            Long ttl = redisTemplate.getExpire(holdKey);
-            if (ttl == null || ttl == -2) {
-                // holdKey đã hết TTL (Redis tự động xóa), ta cần dọn
-                // holdKey format: “hold:show:{showtimeId}:user:{userId}”
-                String[] parts = holdKey.split(":");
-                // ["hold","show","{showtimeId}","user","{userId}"]
-                if (parts.length == 5) {
+            while (cursor.hasNext()) {
+                String hashKey = new String(cursor.next(), StandardCharsets.UTF_8);
+                Long ttl = redisTemplate.getExpire(hashKey, TimeUnit.SECONDS);
+                // TTL <= 0 => đã hết hoặc tự xóa
+                if (ttl == null || ttl <= 0) {
+                    // hashKey format: hold:show:{showtimeId}:user:{userId}:tickets
+                    String[] parts = hashKey.split(":");
                     UUID showtimeId = UUID.fromString(parts[2]);
-                    UUID userId = UUID.fromString(parts[4]);
+                    UUID userId     = UUID.fromString(parts[4]);
                     releaseAllHolds(showtimeId, userId);
                 }
             }
-        }
+        } catch (Exception ignored) {}
     }
 
-    /**
-     * Xóa toàn bộ lockKey của user này cho showtime này,
-     * rồi broadcast “UNLOCK_TIMEOUT” cho từng ticket, sau đó xóa holdSet và holdKey.
-     */
-    private void releaseAllHolds(UUID showtimeId, UUID userId) {
-        String holdSetKey = String.format(HOLD_SET_FMT, showtimeId, userId);
-        Set<String> ticketIds = redisTemplate.opsForSet().members(holdSetKey);
 
-        if (ticketIds != null) {
-            for (String ticketIdStr : ticketIds) {
-                UUID ticketId = UUID.fromString(ticketIdStr);
-                // Xóa riêng lockKey
-                String lockKey = String.format(LOCK_KEY_FMT, showtimeId, ticketId);
-                redisTemplate.delete(lockKey);
-
-                // Broadcast "UNLOCK_TIMEOUT" để front-end:
-                //   - Nếu là user đó, redirect home
-                //   - Mọi user khác thấy ghế trở về “AVAILABLE”
-                messagingTemplate.convertAndSend(
-                        "/topic/seat-status/" + showtimeId,
-                        Map.of(
-                                "ticketId", ticketId,
-                                "status", "UNLOCK_TIMEOUT",
-                                "userId", userId
-                        )
-                );
-            }
+    public void releaseAllHolds(UUID showTimeId, UUID userId) {
+        String holdHashKey = String.format(HOLD_HASH_FMT, showTimeId, userId);
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(holdHashKey);
+        for (Object val : entries.values()) {
+            String[] parts = val.toString().split("\\|");
+            UUID ticketId = UUID.fromString(parts[0]);
+            String lockKey = String.format(LOCK_KEY_FMT, showTimeId, ticketId);
+            redisTemplate.delete(lockKey);
+            messagingTemplate.convertAndSend("/topic/seat-status/" + showTimeId, Map.of("ticketId", ticketId, "status", "UNLOCK_TIMEOUT", "userId", userId));
         }
-
-        // Xóa holdSet và holdKey
-        String holdKey = String.format(HOLD_KEY_FMT, showtimeId, userId);
-        redisTemplate.delete(holdSetKey);
+        String holdKey = String.format(HOLD_KEY_FMT, showTimeId, userId);
+        redisTemplate.delete(holdHashKey);
         redisTemplate.delete(holdKey);
     }
 
-    public AllHoldInfo getAllHolds(UUID showtimeId, UUID userId) {
-        String pattern = String.format(HOLD_KEY_PATTERN, showtimeId);
-        Set<String> keys = redisTemplate.keys(pattern);
-        if (keys == null) keys = Collections.emptySet();
-
-        List<String> heldByMe = new ArrayList<>();
-        List<String> heldByOthers = new ArrayList<>();
-
-        String myKey = String.format(HOLD_SET_FMT, showtimeId, userId);
-        Long myTtl = redisTemplate.getExpire(myKey, TimeUnit.SECONDS);
-        long secondsRemaining = (myTtl == null || myTtl < 0) ? 0L : myTtl;
-
-        for (String key : keys) {
-            Set<Object> members = Collections.singleton(redisTemplate.opsForSet().members(key));
-            if (members == null) continue;
-            List<String> ids = members.stream()
-                    .map(Object::toString)
-                    .toList();
-            if (key.equals(myKey)) {
-                heldByMe.addAll(ids);
-            } else {
-                heldByOthers.addAll(ids);
-            }
-        }
-        heldByOthers = heldByOthers.stream().distinct().toList();
-
-        return new AllHoldInfo(heldByMe, heldByOthers, secondsRemaining);
+    public record HeldTicket(UUID ticketId, double price, String seatLabel, String seatType) {
     }
 
-    public record AllHoldInfo(
-            List<String> heldByMe,
-            List<String> heldByOthers,
-            long secondsRemaining
-    ) {}
+    public record AllHoldInfo(List<HeldTicket> heldTickets, long secondsRemaining, List<HeldTicket> otherHeldTickets) {
+    }
 }
