@@ -207,9 +207,9 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>10.20.1</version>
                 <configuration>
-                    <url>jdbc:postgresql://localhost:5432/booking-be</url>
+                    <url>jdbc:postgresql://192.168.1.156:5432/booking-be</url>
                     <user>postgres</user>
-                    <password>huydoan02122003</password>
+                    <password>123456</password>
                     <schemas>public</schemas>
                     <baselineOnMigrate>true</baselineOnMigrate>
                 </configuration>

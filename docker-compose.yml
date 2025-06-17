@@ -8,30 +8,30 @@ services:
     volumes:
       - redis_data:/data
 
-  redisinsight:
-    image: redis/redisinsight:2.66
-    container_name: redis-insight
-    ports:
-      - "5540:8001"
-    environment:
-      - RI_HOST=0.0.0.0
-    depends_on:
-      - redis
+#  redisinsight:
+#    image: redis/redisinsight:2.66
+#    container_name: redis-insight
+#    ports:
+#      - "5540:8001"
+#    environment:
+#      - RI_HOST=0.0.0.0
+#    depends_on:
+#      - redis
 
-  # PostgreSQL service (commented out by default)
-  # postgres:
-  #   image: postgres:14
-  #   container_name: booking-be
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: 123456
-  #     POSTGRES_DB: booking-fe
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   networks:
-  #     - mynetwork
+  #   PostgreSQL service (commented out by default)
+  postgres:
+    image: postgres:14
+    container_name: booking-be
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: booking-be
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+#    networks:
+#      - mynetwork
 
   # rabbitmq:
   #   image: rabbitmq:3-management
@@ -48,9 +48,9 @@ services:
   #     - mynetwork
 
 volumes:
-  redis_data: {}
-  # postgres_data: {}
-  rabbitmq_data: {}
+  redis_data: { }
+  postgres_data: { }
+#  rabbitmq_data: { }
 
 # networks:
 #   mynetwork:
