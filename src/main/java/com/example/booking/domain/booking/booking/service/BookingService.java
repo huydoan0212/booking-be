@@ -71,11 +71,11 @@ public class BookingService implements IBookingService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found", new Exception("userId")));
         entity.setUser(user);
 
-        // Lấy thông tin Discount nếu có
-        DiscountEntity discount = Optional.ofNullable(dto.getDiscountId())
-                .flatMap(discountRepository::findById)
-                .orElse(null);
-        entity.setDiscount(discount);
+//        // Lấy thông tin Discount nếu có
+//        DiscountEntity discount = Optional.ofNullable(dto.getDiscountId())
+//                .flatMap(discountRepository::findById)
+//                .orElse(null);
+//        entity.setDiscount(discount);
 
         // Lấy danh sách vé từ DB
         List<TicketEntity> tickets = ticketRepository.findAllById(dto.getTicketIds());
@@ -97,12 +97,12 @@ public class BookingService implements IBookingService {
 
         // Tính giá sau khi áp dụng giảm giá (nếu có)
         double finalPrice = totalPrice;
-        if (discount != null) {
-            finalPrice = switch (discount.getDiscountType()) {
-                case FIXED_AMOUNT -> Math.max(0, totalPrice - discount.getDiscountValue());
-                case PERCENTAGE -> Math.max(0, totalPrice * (1 - discount.getDiscountValue() / 100.0));
-            };
-        }
+//        if (discount != null) {
+//            finalPrice = switch (discount.getDiscountType()) {
+//                case FIXED_AMOUNT -> Math.max(0, totalPrice - discount.getDiscountValue());
+//                case PERCENTAGE -> Math.max(0, totalPrice * (1 - discount.getDiscountValue() / 100.0));
+//            };
+//        }
         entity.setFinalPrice(finalPrice);
 
         // Thiết lập trạng thái ban đầu:

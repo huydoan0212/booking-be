@@ -45,7 +45,9 @@ public class SecurityConfiguration {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/ws-ticket/**",
-                                "/app/**").permitAll()
+                                "/app/**",
+                                "/payment/**",
+                                "/upload/**").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/auth/login",
                                 "/user/forgot-password",

@@ -61,6 +61,7 @@ public class TicketEntity {
     @JoinColumn(name = "booking_id")
     private BookingEntity booking;
 
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
