@@ -1,0 +1,84 @@
+spring:
+  datasource:
+    username: postgres
+    password: 123456
+    url: jdbc:postgresql://192.168.1.11:5432/booking-be?timezone=Asia/Ho_Chi_Minh
+  #  flyway:
+  #    locations: classpath:db/migration
+  #    baseline-on-migrate: true
+  #    enabled: false
+  security:
+    jwt:
+      expiration-time: 86400000
+      key: 98ba92417a581cc66b63ffe35e22a7f86aa3b5965f7f205b2e7501d140e4c470c9ae4be22f305c5acd25015067f86ecc1fc79925d5340ba69c2fb41e526da66e5ba87e2e98f368969472d6edbde9d5b7713bcf6be21826551d628bcd46047f0fb5a8e5550e001eee169c22bbf704c0ea5f65e460f9d7df51e5dd1d11200f819d
+      issuer: meu
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  jpa:
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+    show-sql: true
+    open-in-view: false
+  application:
+    name: nike-be
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: testmeusolution@gmail.com
+    password: bopciqcccnuhoazn
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          from: testmeusolution@gmail.com
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+springdoc:
+  swagger-ui:
+    tagsSorter: alpha
+    operationsSorter: method
+    config-url: "/api/v3/api-docs/swagger-config"
+    url: "/api/v3/api-docs"
+  api-docs:
+    enabled: true
+    path: "/v3/api-docs"
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+minio:
+  url: http://localhost:9000/
+#  access-key: JNAtDJ8eJrOJzdeNlXBG1DkOiQ3vjoLDhrF9oFDZu8JI1Mmk5CXnXKYogXRzmsGHge3MxfvcXAodcjt24EuN0nFZk6xoCPpFgbhCykwbVtC4jkVLDk8maZhHyrGl4kgM
+#  secret-key: cjN3EdL5gTBb9J8WqjN5KiMzzTsXNgR6XZK6mmP19KdxhxkoSKBeyU4Ze76Z3JiG4JrKPlU2y7o7TVwFU41XXXJXaioFtbd4hsgVl3JcK9WKoNKaTxzMargDoFm4gnpm
+  access-key: minio_client
+  secret-key: minio_client
+  bucket: booking
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        data: DEBUG
+        security: DEBUG
+    com:
+      example:
+        controller: DEBUG
+        service: DEBUG
+        repository: DEBUG
