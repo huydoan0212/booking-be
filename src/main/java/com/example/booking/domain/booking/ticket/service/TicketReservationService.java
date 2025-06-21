@@ -144,10 +144,10 @@ public class TicketReservationService implements ITicketReservationService {
     // Helper method để parse một value "ticketId|price|label|type"
     private HeldTicket parseHeldTicket(String csv) {
         String[] parts = csv.split("\\|");
-        UUID tId       = UUID.fromString(parts[0]);
-        double price   = Double.parseDouble(parts[1]);
-        String label   = parts[2];
-        String type    = parts[3];
+        UUID tId = UUID.fromString(parts[0]);
+        double price = Double.parseDouble(parts[1]);
+        String label = parts[2];
+        String type = parts[3];
         return new HeldTicket(tId, price, label, type);
     }
 
@@ -190,11 +190,12 @@ public class TicketReservationService implements ITicketReservationService {
                     // hashKey format: hold:show:{showtimeId}:user:{userId}:tickets
                     String[] parts = hashKey.split(":");
                     UUID showtimeId = UUID.fromString(parts[2]);
-                    UUID userId     = UUID.fromString(parts[4]);
+                    UUID userId = UUID.fromString(parts[4]);
                     releaseAllHolds(showtimeId, userId);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
 
@@ -212,6 +213,50 @@ public class TicketReservationService implements ITicketReservationService {
         redisTemplate.delete(holdHashKey);
         redisTemplate.delete(holdKey);
     }
+
+//    public void releaseAllHoldsByUser(UUID userId) {
+//        // 1. Xác định pattern để tìm mọi hash-key tương ứng
+//        String basePattern = String.format("hold:show:*:user:%s", userId);
+//        // Hash keys: hold:show:{showTimeId}:user:{userId}
+//        // List keys: hold:show:{showTimeId}:user:{userId}:tickets
+//        Set<String> allKeys = redisTemplate.keys(basePattern + "*");
+//        if (allKeys == null || allKeys.isEmpty()) {
+//            return;
+//        }
+//
+//        for (String key : allKeys) {
+//            // Lấy showTimeId từ key
+//            // key có dạng "hold:show:{showTimeId}:user:{userId}" hoặc
+//            //               "hold:show:{showTimeId}:user:{userId}:tickets"
+//            String[] partsKey = key.split(":");
+//            UUID showTimeId = UUID.fromString(partsKey[2]);
+//
+//            // Nếu là hash (không đuôi ":tickets"), xử lý entries
+//            if (!key.endsWith(":tickets")) {
+//                Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
+//                for (Object val : entries.values()) {
+//                    String[] parts = val.toString().split("\\|");
+//                    UUID ticketId = UUID.fromString(parts[0]);
+//                    // Xóa lock riêng
+//                    String lockKey = String.format(LOCK_KEY_FMT, showTimeId, ticketId);
+//                    redisTemplate.delete(lockKey);
+//                    // Notify cho FE
+//                    messagingTemplate.convertAndSend(
+//                            "/topic/seat-status/" + showTimeId,
+//                            Map.of(
+//                                    "ticketId", ticketId,
+//                                    "status", "BOOKED",
+//                                    "userId", userId
+//                            )
+//                    );
+//                }
+//            }
+//            // 2. Xóa key (cả hash lẫn list)
+//            redisTemplate.delete(key);
+//        }
+//    }
+
+
 
     public record HeldTicket(UUID ticketId, double price, String seatLabel, String seatType) {
     }

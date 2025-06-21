@@ -17,11 +17,16 @@ import com.example.booking.domain.booking.ticket.repository.TicketRepository;
 import com.example.booking.domain.user.user.entity.UserEntity;
 import com.example.booking.domain.user.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,20 +37,23 @@ import static com.example.booking.common.enums.type.DiscountType.PERCENTAGE;
 @Service
 public class BookingService implements IBookingService {
 
+    private static final Logger log = LoggerFactory.getLogger(BookingService.class);
     private final BookingRepository repository;
     private final BookingMapper mapper;
     private final DiscountRepository discountRepository;
     private final UserRepository userRepository;
     private final CodeGenerator codeGenerator;
     private final TicketRepository ticketRepository;
+    private final BookingRepository bookingRepository;
 
-    public BookingService(BookingRepository repository, BookingMapper mapper, DiscountRepository discountRepository, UserRepository userRepository, CodeGenerator codeGenerator, TicketRepository ticketRepository) {
+    public BookingService(BookingRepository repository, BookingMapper mapper, DiscountRepository discountRepository, UserRepository userRepository, CodeGenerator codeGenerator, TicketRepository ticketRepository, BookingRepository bookingRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.discountRepository = discountRepository;
         this.userRepository = userRepository;
         this.codeGenerator = codeGenerator;
         this.ticketRepository = ticketRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -72,10 +80,10 @@ public class BookingService implements IBookingService {
         entity.setUser(user);
 
 //        // Lấy thông tin Discount nếu có
-//        DiscountEntity discount = Optional.ofNullable(dto.getDiscountId())
-//                .flatMap(discountRepository::findById)
-//                .orElse(null);
-//        entity.setDiscount(discount);
+        DiscountEntity discount = Optional.ofNullable(dto.getDiscountId())
+                .flatMap(discountRepository::findById)
+                .orElse(null);
+        entity.setDiscount(discount);
 
         // Lấy danh sách vé từ DB
         List<TicketEntity> tickets = ticketRepository.findAllById(dto.getTicketIds());
@@ -97,12 +105,12 @@ public class BookingService implements IBookingService {
 
         // Tính giá sau khi áp dụng giảm giá (nếu có)
         double finalPrice = totalPrice;
-//        if (discount != null) {
-//            finalPrice = switch (discount.getDiscountType()) {
-//                case FIXED_AMOUNT -> Math.max(0, totalPrice - discount.getDiscountValue());
-//                case PERCENTAGE -> Math.max(0, totalPrice * (1 - discount.getDiscountValue() / 100.0));
-//            };
-//        }
+        if (discount != null) {
+            finalPrice = switch (discount.getDiscountType()) {
+                case FIXED_AMOUNT -> Math.max(0, totalPrice - discount.getDiscountValue());
+                case PERCENTAGE -> Math.max(0, totalPrice * (1 - discount.getDiscountValue() / 100.0));
+            };
+        }
         entity.setFinalPrice(finalPrice);
 
         // Thiết lập trạng thái ban đầu:
@@ -131,5 +139,33 @@ public class BookingService implements IBookingService {
     @Override
     public PageDto<BookingResponseDto> searchEntity(Specification<BookingEntity> spec, Pageable pageable) {
         return new PageDto<>(repository.findAll(spec, pageable).map(mapper::toResponse));
+    }
+
+    @Scheduled(cron = "0 * * * * *")  // mỗi phút, tại giây 0
+    @Transactional
+    public void cancelStaleBookings() {
+        // Tính thời điểm cắt: bây giờ - 15 phút
+        OffsetDateTime cutoff = OffsetDateTime.now(ZoneOffset.UTC).minusMinutes(15);
+
+        // Lấy danh sách booking chưa thanh toán cũ hơn cutoff
+        List<BookingEntity> stale = bookingRepository
+                .findByPaymentStatusAndCreatedAtBefore(PaymentStatus.PENDING, cutoff);
+
+        if (stale.isEmpty()) {
+            log.debug("Không có booking cũ để huỷ");
+            return;
+        }
+
+        log.info("Huỷ {} booking đã quá 15 phút chưa thanh toán", stale.size());
+
+        for (BookingEntity b : stale) {
+            b.setBookingStatus(BookingStatus.CANCELLED);
+            b.setPaymentStatus(PaymentStatus.EXPIRED);
+            // nếu cần, bạn có thể add logic notify qua WebSocket hoặc gửi email ở đây
+        }
+
+        // Lưu lại tất cả trong một batch
+        bookingRepository.saveAll(stale);
+        log.info("Hoàn tất huỷ booking cũ");
     }
 }

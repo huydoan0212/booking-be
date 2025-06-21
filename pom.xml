@@ -163,6 +163,11 @@
             <artifactId>minio</artifactId>
             <version>8.5.14</version>
         </dependency>
+        <!-- pom.xml -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class CreateBookingDto {
-//    private UUID discountId;
+    private UUID discountId;
     private UUID userId;
     private List<UUID> ticketIds;
 }

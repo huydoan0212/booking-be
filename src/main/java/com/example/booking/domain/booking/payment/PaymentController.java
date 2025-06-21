@@ -3,10 +3,12 @@ package com.example.booking.domain.booking.payment;
 import com.example.booking.domain.booking.payment.dto.PaymentResponse;
 import com.example.booking.domain.booking.payment.service.PaymentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
@@ -27,7 +29,7 @@ public class PaymentController {
     }
 
     @GetMapping("/notify")
-    public String notify(HttpServletResponse response,
+    public void notify(HttpServletResponse response,
                          @RequestParam String vnp_Amount,
                          @RequestParam String vnp_BankCode,
                          @RequestParam(required = false) String vnp_BankTranNo,
@@ -39,9 +41,16 @@ public class PaymentController {
                          @RequestParam String vnp_TransactionNo,
                          @RequestParam String vnp_TransactionStatus,
                          @RequestParam String vnp_TxnRef,
-                         @RequestParam String vnp_SecureHash) throws UnsupportedEncodingException {
-        boolean isSuccess = paymentService.notifyBooking(vnp_ResponseCode, vnp_TxnRef, vnp_TransactionNo, vnp_PayDate, vnp_Amount);
-        return isSuccess ? "Thanh toán thành công" : "Thanh toán thất bại";
+                         @RequestParam String vnp_SecureHash) throws IOException, MessagingException {
+        boolean isSuccess = paymentService.notifyBooking(
+                vnp_ResponseCode, vnp_TxnRef, vnp_TransactionNo, vnp_PayDate, vnp_Amount
+        );
+        // Redirect về FE (giả sử FE chạy trên localhost:4200)
+        // 302 redirect thẳng về FE
+        String target = "http://localhost:4200/payment-result?payment="
+                + (isSuccess ? "success" : "fail")
+                + "&txnRef=" + vnp_TxnRef;
+        response.sendRedirect(target);
     }
 
     @PostMapping("/test")

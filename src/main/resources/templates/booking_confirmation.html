@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; overflow: hidden; }
+        .header { padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 20px; color: #333; }
+        .content { padding: 20px; color: #333; }
+        .highlight { font-size: 28px; font-weight: bold; color: #E91E63; margin: 16px 0; text-align: center; }
+        .qr-box { text-align: center; padding: 20px; }
+        .qr-box img { width: 200px; height: 200px; }
+        .footer { padding: 20px; text-align: center; border-top: 1px solid #eee; color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Xin chào <span th:text="${customerName}">Khách</span>,</h1>
+    </div>
+    <div class="content">
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của MoMo!</p>
+        <p>MoMo xác nhận bạn đã đặt vé xem phim tại <strong th:text="${cinemaName}">Cinema</strong> thành công lúc <strong th:text="${bookingTime}">time</strong>.</p>
+        <p>Chi tiết vé của bạn như sau:</p>
+        <div class="highlight">Mã đặt vé<br/><span th:text="${bookingCode}">CODE</span></div>
+        <div class="qr-box">
+            <img th:src="@{${qrCodeUrl}}" alt="QR Code"/>
+            <p>Đem mã QR này đến quầy giao dịch hoặc nhân viên soát vé để nhận vé</p>
+        </div>
+        <p>Thời gian chiếu:<br/><strong th:text="${showTime}">showTime</strong></p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2025 MoMo. All Rights Reserved.</p>
+    </div>
+</div>
+</body>
+</html>

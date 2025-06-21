@@ -67,14 +67,13 @@ public class SecurityConfiguration {
                                 "/ticket/**")
                         .permitAll()
                         // AUTHENTICATED APIs - Requires login
-                        .requestMatchers(HttpMethod.GET, "/user/profile").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/user/profile", "/user/search").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/user/profile").authenticated()
 
                         // ADMIN APIs - Requires ADMIN role
                         .requestMatchers(HttpMethod.GET,
                                 "/user/{id}",
-                                "/user/",
-                                "/user/search").hasRole(ADMIN.toString())
+                                "/user/").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.POST,
                                 "/user/{role}",
                                 "/movie/**",
@@ -83,7 +82,6 @@ public class SecurityConfiguration {
                                 "/cinema-hall/**",
                                 "/seat/**",
                                 "/show-time/**",
-                                "/booking/**",
                                 "/discount/**",
                                 "/ticket/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.PUT,
@@ -94,7 +92,6 @@ public class SecurityConfiguration {
                                 "/cinema-hall/**",
                                 "/seat/**",
                                 "/show-time/**",
-                                "/booking/**",
                                 "/discount/**",
                                 "/ticket/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.DELETE,
@@ -107,8 +104,9 @@ public class SecurityConfiguration {
                                 "/show-time/**",
                                 "/booking/**",
                                 "/discount/**",
-                                "/ticket/**").hasRole(ADMIN.toString()))
-
+                                "/ticket/**").hasRole(ADMIN.toString())
+                        .requestMatchers(HttpMethod.POST,
+                                "/booking/**").authenticated())
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer
                         .accessDeniedHandler((request, response, e) -> {
                             GlobalResponse globalResponse = new GlobalResponse(
@@ -119,7 +117,7 @@ public class SecurityConfiguration {
                             );
                             response.setContentType("application/json;charset=UTF-8");
                             response.setStatus(HttpStatus.FORBIDDEN.value());
-                            response.getWriter().write(new ObjectMapper().writeValueAsString(globalResponse));
+                            response.getWriter().write(objectMapper.writeValueAsString(globalResponse));
                         })
 
                         .authenticationEntryPoint((request, response, e) -> {
