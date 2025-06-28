@@ -43,7 +43,7 @@ public class OpenAPIConfiguration {
     private List<Server> server() {
         List<Server> servers = new ArrayList<>();
         servers.add(new Server().description("Dev backend ").url("http://localhost:8080/api/"));
-        servers.add(new Server().description("Dev frontend").url("http://192.168.1.141:8080/api/"));
+        servers.add(new Server().description("Dev frontend").url("http://192.168.1.125:8080/api/"));
         return servers;
     }
 

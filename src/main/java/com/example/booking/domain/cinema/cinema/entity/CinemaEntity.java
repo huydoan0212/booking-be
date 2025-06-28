@@ -3,6 +3,8 @@ package com.example.booking.domain.cinema.cinema.entity;
 import com.example.booking.domain.cinema.cinemaHall.cinemaHall.entity.CinemaHallEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +33,8 @@ public class CinemaEntity {
     private UUID id;
 
     @Column(name = "name")
+//    @NotNull
+    @Size(max = 50)
     private String name;
 
     @Column(name = "slug")

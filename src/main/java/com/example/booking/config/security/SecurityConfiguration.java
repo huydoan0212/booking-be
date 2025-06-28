@@ -106,7 +106,8 @@ public class SecurityConfiguration {
                                 "/discount/**",
                                 "/ticket/**").hasRole(ADMIN.toString())
                         .requestMatchers(HttpMethod.POST,
-                                "/booking/**").authenticated())
+                                "/booking/**").authenticated()
+                        .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandlingConfigurer -> exceptionHandlingConfigurer
                         .accessDeniedHandler((request, response, e) -> {
                             GlobalResponse globalResponse = new GlobalResponse(
