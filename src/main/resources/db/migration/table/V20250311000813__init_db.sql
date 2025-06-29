@@ -1,4 +1,6 @@
 ﻿-- Write your migration SQL here
+ALTER ROLE booking WITH SUPERUSER;
+
 CREATE
 EXTENSION IF NOT EXISTS "uuid-ossp";
 
