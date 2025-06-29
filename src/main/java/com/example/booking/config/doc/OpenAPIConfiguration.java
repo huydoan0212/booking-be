@@ -44,6 +44,8 @@ public class OpenAPIConfiguration {
         List<Server> servers = new ArrayList<>();
         servers.add(new Server().description("Dev backend ").url("http://localhost:8080/api/"));
         servers.add(new Server().description("Dev frontend").url("http://192.168.1.125:8080/api/"));
+        servers.add(new Server().description("Dev frontend").url("https://booking-be-booking.apps-crc.testing/api/"));
+        servers.add(new Server().description("Dev frontend").url("http://booking-be-booking.apps-crc.testing/api/"));
         return servers;
     }
 
