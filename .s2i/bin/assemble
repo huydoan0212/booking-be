@@ -1,23 +1,36 @@
 #!/bin/bash
 set -e
 
-# 1. Chuyển vào thư mục mã nguồn
-SRC_DIR=${S2I_SOURCE_DIR:-/tmp/src}
-cd "$SRC_DIR"
-echo ">>> In $(pwd), listing files:"
-ls -1
+# 1. Chuyển vào thư mục source
+cd "${S2I_SOURCE_DIR:-/tmp/src}"
+echo ">>> Current dir: $(pwd)"
 
-# 2. Chạy Flyway migrate
-echo ">>> Running Flyway migrate..."
+# 2. In env vars Flyway sẽ dùng
+echo ">>> Debug: environment variables for Flyway"
+echo "  SPRING_DATASOURCE_URL:     '${SPRING_DATASOURCE_URL}'"
+echo "  SPRING_DATASOURCE_USERNAME:'${SPRING_DATASOURCE_USERNAME}'"
+echo "  SPRING_DATASOURCE_PASSWORD:'${SPRING_DATASOURCE_PASSWORD}'"
+
+# 3. Kiểm tra connectivity
+DB_HOST_PORT="${SPRING_DATASOURCE_URL#*//}"   # 'host:port/db'
+DB_HOST="${DB_HOST_PORT%%/*}"                # 'host:port'
+HOST="${DB_HOST%%:*}"                        # 'host'
+PORT="${DB_HOST##*:}"                        # 'port'
+echo ">>> Testing connectivity to $HOST on port $PORT"
+if command -v nc >/dev/null 2>&1; then
+  nc -zv "$HOST" "$PORT" || echo "!!! TCP connect failed"
+else
+  echo "!!! nc not found, skipping connectivity test"
+fi
+
+# 4. Chạy Flyway
+echo ">>> Running Flyway migrate"
 mvn org.flywaydb:flyway-maven-plugin:10.20.1:migrate \
-  -DSPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}" \
-  -DSPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}" \
-  -DSPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
+  -Dspring.datasource.url="$SPRING_DATASOURCE_URL" \
+  -Dspring.datasource.user="$SPRING_DATASOURCE_USERNAME" \
+  -Dspring.datasource.password="$SPRING_DATASOURCE_PASSWORD"
 
-# 3. Build jar
-echo ">>> Building application..."
+# 5. Build jar
+echo ">>> Building Spring Boot JAR"
 mvn clean package -DskipTests
-
-# 4. Copy artifact cho S2I runtime
-ARTIFACT=$(ls target/*.jar | head -n1)
-cp "$ARTIFACT" /deployments/app.jar
+cp target/*.jar /deployments/app.jar
