@@ -3,6 +3,11 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:123456}
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://10.50.26.144:5432/booking-be?timezone=Asia/Ho_Chi_Minh}
+  flyway:
+    enabled: true
+    url: ${SPRING_DATASOURCE_URL}
+    user: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   security:
     jwt:
       expiration-time: 86400000
