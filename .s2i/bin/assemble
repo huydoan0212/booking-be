@@ -1,4 +1,23 @@
+#!/bin/bash
+set -e
+
+# 1. Chuyển vào thư mục mã nguồn
+SRC_DIR=${S2I_SOURCE_DIR:-/tmp/src}
+cd "$SRC_DIR"
+echo ">>> In $(pwd), listing files:"
+ls -1
+
+# 2. Chạy Flyway migrate
+echo ">>> Running Flyway migrate..."
 mvn org.flywaydb:flyway-maven-plugin:10.20.1:migrate \
-  -DSPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
-  -DSPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
-  -DSPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD"
+  -DSPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}" \
+  -DSPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}" \
+  -DSPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
+
+# 3. Build jar
+echo ">>> Building application..."
+mvn clean package -DskipTests
+
+# 4. Copy artifact cho S2I runtime
+ARTIFACT=$(ls target/*.jar | head -n1)
+cp "$ARTIFACT" /deployments/app.jar
