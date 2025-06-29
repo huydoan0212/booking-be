@@ -218,10 +218,10 @@
                     </excludes>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.flywaydb</groupId>-->
-<!--                <artifactId>flyway-maven-plugin</artifactId>-->
-<!--                <version>10.20.1</version>-->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>10.20.1</version>
 <!--                <configuration>-->
 <!--                    <url>${SPRING_DATASOURCE_URL}</url>-->
 <!--                    <user>${SPRING_DATASOURCE_USERNAME}</user>-->
@@ -229,8 +229,7 @@
 <!--                    <schemas>public</schemas>-->
 <!--                    <baselineOnMigrate>true</baselineOnMigrate>-->
 <!--                </configuration>-->
-<!--            </plugin>-->
-
+            </plugin>
         </plugins>
     </build>
 
